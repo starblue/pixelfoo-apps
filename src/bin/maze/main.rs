@@ -67,7 +67,7 @@ fn send<T: Write>(w: &mut T, board: &Board) -> std::io::Result<()> {
             let Color(r, g, b) = match square {
                 Square::Unknown => Color::black(),
                 Square::Corridor => Color::yellow(),
-                Square::Wall => Color::darkbrown(),
+                Square::Wall => Color::blue(),
                 Square::Start => Color::red(),
                 Square::Finish => Color::green(),
             };
