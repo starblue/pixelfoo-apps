@@ -39,6 +39,9 @@ impl Color {
     fn magenta() -> Color {
         Color(255, 0, 255)
     }
+    fn brown() -> Color {
+        Color(165, 42, 42)
+    }
     fn complement(&self) -> Color {
         Color(255 - self.0, 255 - self.1, 255 - self.2)
     }
@@ -61,7 +64,7 @@ fn send<T: Write>(w: &mut T, board: &Board) -> std::io::Result<()> {
             let Color(r, g, b) = match square {
                 Square::Unknown => Color::black(),
                 Square::Corridor => Color::yellow(),
-                Square::Wall => Color::blue(),
+                Square::Wall => Color::brown(),
                 Square::Start => Color::red(),
                 Square::Finish => Color::green(),
             };
