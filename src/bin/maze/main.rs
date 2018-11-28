@@ -40,7 +40,7 @@ impl Color {
         Color(255, 0, 255)
     }
     fn brown() -> Color {
-        Color(165, 42, 42)
+        Color(210, 105, 30)
     }
     fn complement(&self) -> Color {
         Color(255 - self.0, 255 - self.1, 255 - self.2)
