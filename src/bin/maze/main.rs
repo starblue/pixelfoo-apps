@@ -162,54 +162,56 @@ fn main() -> std::io::Result<()> {
                 add_move(&mut open, arg, mid, (-1, 0));
                 add_move(&mut open, arg, mid, (0, -1));
             }
-        } else {
-            let work = arg.max(1);
-            let mut count = 0;
-            while !open.is_empty() && count < work {
-                let mut start = 0;
-                let mut limit = 0;
-                let mut prio = open[limit].prio;
-                loop {
-                    limit += 1;
-                    if limit >= open.len() {
+        }
+
+        // draw maze
+        let work = arg.max(1);
+        let mut count = 0;
+        while !open.is_empty() && count < work {
+            let mut start = 0;
+            let mut limit = 0;
+            let mut prio = open[limit].prio;
+            loop {
+                limit += 1;
+                if limit >= open.len() {
+                    break;
+                }
+                if open[limit].prio > prio {
+                    if rng.gen::<f64>() >= 0.4 {
                         break;
                     }
-                    if open[limit].prio > prio {
-                        if rng.gen::<f64>() >= 0.4 {
-                            break;
-                        }
-                        start = limit;
-                        prio = open[limit].prio;
-                    }
-                }
-                let r = rng.gen_range(start, limit);
-                let Move {
-                    from: (x0, y0),
-                    dir: (dx, dy),
-                    ..
-                } = open.remove(r);
-
-                let (x1, y1) = (x0 + dx, y0 + dy);
-                let (x2, y2) = (x1 + dx, y1 + dy);
-                if board.get((x1, y1)) == Square::Unknown {
-                    board.set((x1, y1), Square::Corridor);
-                    board.set((x2, y2), Square::Corridor);
-
-                    for (dx, dy) in vec![(1, 0), (0, 1), (-1, 0), (0, -1)] {
-                        let (x3, y3) = (x2 + dx, y2 + dy);
-                        let (x4, y4) = (x3 + dx, y3 + dy);
-                        if board.get((x3, y3)) == Square::Unknown {
-                            if board.get((x4, y4)) == Square::Unknown {
-                                add_move(&mut open, arg, (x2, y2), (dx, dy));
-                            } else {
-                                board.set((x3, y3), Square::Wall);
-                            }
-                        }
-                    }
-
-                    count += 1;
+                    start = limit;
+                    prio = open[limit].prio;
                 }
             }
+            let r = rng.gen_range(start, limit);
+            let Move {
+                from: (x0, y0),
+                dir: (dx, dy),
+                ..
+            } = open.remove(r);
+
+            let (x1, y1) = (x0 + dx, y0 + dy);
+            let (x2, y2) = (x1 + dx, y1 + dy);
+            if board.get((x1, y1)) == Square::Unknown {
+                board.set((x1, y1), Square::Corridor);
+                board.set((x2, y2), Square::Corridor);
+
+                for (dx, dy) in vec![(1, 0), (0, 1), (-1, 0), (0, -1)] {
+                    let (x3, y3) = (x2 + dx, y2 + dy);
+                    let (x4, y4) = (x3 + dx, y3 + dy);
+                    if board.get((x3, y3)) == Square::Unknown {
+                        if board.get((x4, y4)) == Square::Unknown {
+                            add_move(&mut open, arg, (x2, y2), (dx, dy));
+                        } else {
+                            board.set((x3, y3), Square::Wall);
+                        }
+                    }
+                }
+
+                count += 1;
+            }
+
             if open.is_empty() {
                 board.set((1, 1), Square::Start);
                 board.set((x_maze_size - 2, y_maze_size - 2), Square::Finish);
