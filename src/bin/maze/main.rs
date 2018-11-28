@@ -42,6 +42,9 @@ impl Color {
     fn brown() -> Color {
         Color(210, 105, 30)
     }
+    fn darkblue() -> Color {
+        Color(0, 0, 127)
+    }
     fn darkbrown() -> Color {
         Color(139, 69, 19)
     }
@@ -67,7 +70,7 @@ fn send<T: Write>(w: &mut T, board: &Board) -> std::io::Result<()> {
             let Color(r, g, b) = match square {
                 Square::Unknown => Color::black(),
                 Square::Corridor => Color::yellow(),
-                Square::Wall => Color::blue(),
+                Square::Wall => Color::darkblue(),
                 Square::Start => Color::red(),
                 Square::Finish => Color::green(),
             };
