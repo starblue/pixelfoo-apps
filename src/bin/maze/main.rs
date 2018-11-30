@@ -7,51 +7,7 @@ use std::time::Duration;
 use rand::thread_rng;
 use rand::Rng;
 
-#[derive(Clone, Copy, Debug)]
-struct Color(u8, u8, u8);
-
-#[allow(unused)]
-impl Color {
-    fn black() -> Color {
-        Color(0, 0, 0)
-    }
-    fn white() -> Color {
-        Color(255, 255, 255)
-    }
-    fn gray50() -> Color {
-        Color(128, 128, 128)
-    }
-    fn red() -> Color {
-        Color(255, 0, 0)
-    }
-    fn green() -> Color {
-        Color(0, 255, 0)
-    }
-    fn blue() -> Color {
-        Color(0, 0, 255)
-    }
-    fn yellow() -> Color {
-        Color(255, 255, 0)
-    }
-    fn cyan() -> Color {
-        Color(0, 255, 255)
-    }
-    fn magenta() -> Color {
-        Color(255, 0, 255)
-    }
-    fn brown() -> Color {
-        Color(210, 105, 30)
-    }
-    fn darkblue() -> Color {
-        Color(0, 0, 127)
-    }
-    fn darkbrown() -> Color {
-        Color(139, 69, 19)
-    }
-    fn complement(&self) -> Color {
-        Color(255 - self.0, 255 - self.1, 255 - self.2)
-    }
-}
+use pixelfoo::color::Color;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Square {
@@ -67,15 +23,14 @@ struct Board(Vec<Vec<Square>>);
 fn send<T: Write>(w: &mut T, board: &Board) -> std::io::Result<()> {
     for line in &board.0 {
         for square in line {
-            let Color(r, g, b) = match square {
+            let c = match square {
                 Square::Unknown => Color::black(),
                 Square::Corridor => Color::yellow(),
                 Square::Wall => Color::darkblue(),
                 Square::Start => Color::red(),
                 Square::Finish => Color::green(),
             };
-            let buf = &[r, g, b];
-            w.write_all(buf)?;
+            w.write_all(&c.rgb())?;
         }
     }
     w.flush()

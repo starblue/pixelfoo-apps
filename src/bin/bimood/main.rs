@@ -5,64 +5,14 @@ use std::iter::repeat;
 use std::thread::sleep;
 use std::time::Duration;
 
-#[derive(Clone, Copy, Debug)]
-struct Color(u8, u8, u8);
-
-impl Color {
-    fn black() -> Color {
-        Color(0, 0, 0)
-    }
-    fn white() -> Color {
-        Color(255, 255, 255)
-    }
-    fn gray50() -> Color {
-        Color(128, 128, 128)
-    }
-    fn red() -> Color {
-        Color(255, 0, 0)
-    }
-    fn green() -> Color {
-        Color(0, 255, 0)
-    }
-    fn blue() -> Color {
-        Color(0, 0, 255)
-    }
-    fn yellow() -> Color {
-        Color(255, 255, 0)
-    }
-    fn cyan() -> Color {
-        Color(0, 255, 255)
-    }
-    fn magenta() -> Color {
-        Color(255, 0, 255)
-    }
-    fn complement(&self) -> Color {
-        Color(255 - self.0, 255 - self.1, 255 - self.2)
-    }
-}
-
-fn interpolate_u8(b0: u8, b1: u8, a: f64) -> u8 {
-    let b0 = b0 as f64;
-    let b1 = b1 as f64;
-    ((1.0 - a) * b0 + a * b1) as u8
-}
-
-fn interpolate(c0: Color, c1: Color, a: f64) -> Color {
-    Color(
-        interpolate_u8(c0.0, c1.0, a),
-        interpolate_u8(c0.1, c1.1, a),
-        interpolate_u8(c0.2, c1.2, a),
-    )
-}
+use pixelfoo::color::Color;
 
 type Frame = Vec<Vec<Color>>;
 
 fn send<T: Write>(w: &mut T, f: &Frame) -> std::io::Result<()> {
     for l in f {
         for c in l {
-            let Color(r, g, b) = c;
-            let buf = &[*r, *g, *b];
-            w.write_all(buf)?;
+            w.write_all(&c.rgb())?;
         }
     }
     w.flush()
@@ -109,7 +59,7 @@ fn main() -> std::io::Result<()> {
 
     eprint!("delta_a {}", delta_a);
     loop {
-        let c0 = interpolate(previous_color, next_color, a);
+        let c0 = previous_color.interpolate(next_color, a);
         let c1 = c0.complement();
         let mut frame = repeat(repeat(c0).take(x_size).collect::<Vec<_>>())
             .take(y_size)
