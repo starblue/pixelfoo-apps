@@ -8,6 +8,10 @@ use rand::thread_rng;
 use rand::Rng;
 
 use pixelfoo::color::Color;
+use pixelfoo::p2;
+use pixelfoo::point2::Point2;
+use pixelfoo::v2;
+use pixelfoo::vec2::Vec2;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Square {
@@ -37,17 +41,17 @@ fn send<T: Write>(w: &mut T, board: &Board) -> std::io::Result<()> {
 }
 
 impl Board {
-    fn new(x_size: i32, y_size: i32, x_maze_size: i32, y_maze_size: i32) -> Board {
+    fn new(board_size: Vec2, maze_size: Vec2) -> Board {
         Board(
-            (0..y_size)
+            (0..board_size.y)
                 .map(move |y| {
-                    (0..x_size)
+                    (0..board_size.x)
                         .map(|x| {
-                            if x < x_maze_size && y < y_maze_size {
+                            if x < maze_size.x && y < maze_size.y {
                                 if x == 0
-                                    || x == x_maze_size - 1
+                                    || x == maze_size.x - 1
                                     || y == 0
-                                    || y == y_maze_size - 1
+                                    || y == maze_size.y - 1
                                     || (x % 2 == 0 && y % 2 == 0)
                                 {
                                     Square::Wall
@@ -63,23 +67,21 @@ impl Board {
                 .collect::<Vec<_>>(),
         )
     }
-    fn get(&self, pos: (i32, i32)) -> Square {
-        let (x, y) = pos;
-        self.0[y as usize][x as usize]
+    fn get(&self, pos: Point2) -> Square {
+        self.0[pos.y as usize][pos.x as usize]
     }
-    fn set(&mut self, pos: (i32, i32), sq: Square) {
-        let (x, y) = pos;
-        self.0[y as usize][x as usize] = sq;
+    fn set(&mut self, pos: Point2, sq: Square) {
+        self.0[pos.y as usize][pos.x as usize] = sq;
     }
 }
 
 struct Move {
-    from: (i32, i32),
-    dir: (i32, i32),
+    from: Point2,
+    dir: Vec2,
     prio: i32,
 }
 
-fn add_move(open: &mut Vec<Move>, arg: isize, from: (i32, i32), dir: (i32, i32)) {
+fn add_move(open: &mut Vec<Move>, arg: isize, from: Point2, dir: Vec2) {
     open.push(Move { from, dir, prio: 0 });
     open.sort_unstable_by(|Move { prio: pa, .. }, Move { prio: pb, .. }| pa.cmp(pb));
 }
@@ -101,12 +103,14 @@ fn main() -> std::io::Result<()> {
     let delay = Duration::new(0, (1_000_000_000.0 * t_frame) as u32);
     let mut t_wait = 0.0; // s
 
-    let x_size = x_size as i32;
-    let y_size = y_size as i32;
-    let x_maze_size = (x_size - 1) / 2 * 2 + 1;
-    let y_maze_size = (y_size - 1) / 2 * 2 + 1;
-    let x_maze_mid = (x_maze_size - 1) / 4 * 2 + 1;
-    let y_maze_mid = (y_maze_size - 1) / 4 * 2 + 1;
+    let board_size = v2!(x_size as i32, y_size as i32);
+    // round down to odd size for maze
+    let maze_size = v2!(
+        (board_size.x - 1) / 2 * 2 + 1,
+        (board_size.y - 1) / 2 * 2 + 1
+    );
+    // pick odd position at or near the middle
+    let maze_mid = p2!((maze_size.x - 1) / 4 * 2 + 1, (maze_size.y - 1) / 4 * 2 + 1);
 
     let mut board = Board(Vec::new());
     let mut open = Vec::new();
@@ -116,15 +120,14 @@ fn main() -> std::io::Result<()> {
                 t_wait -= t_frame;
             } else {
                 t_wait = 60.0; // s
-                board = Board::new(x_size, y_size, x_maze_size, y_maze_size);
+                board = Board::new(board_size, maze_size);
 
                 // start in the middle
-                let mid = (x_maze_mid, y_maze_mid);
-                board.set(mid, Square::Corridor);
-                add_move(&mut open, arg, mid, (1, 0));
-                add_move(&mut open, arg, mid, (0, 1));
-                add_move(&mut open, arg, mid, (-1, 0));
-                add_move(&mut open, arg, mid, (0, -1));
+                board.set(maze_mid, Square::Corridor);
+                add_move(&mut open, arg, maze_mid, v2!(1, 0));
+                add_move(&mut open, arg, maze_mid, v2!(0, 1));
+                add_move(&mut open, arg, maze_mid, v2!(-1, 0));
+                add_move(&mut open, arg, maze_mid, v2!(0, -1));
             }
         }
 
@@ -150,25 +153,25 @@ fn main() -> std::io::Result<()> {
             }
             let r = rng.gen_range(start, limit);
             let Move {
-                from: (x0, y0),
-                dir: (dx, dy),
+                from: p0,
+                dir: dir0,
                 ..
             } = open.remove(r);
 
-            let (x1, y1) = (x0 + dx, y0 + dy);
-            let (x2, y2) = (x1 + dx, y1 + dy);
-            if board.get((x1, y1)) == Square::Unknown {
-                board.set((x1, y1), Square::Corridor);
-                board.set((x2, y2), Square::Corridor);
+            let p1 = p0 + dir0;
+            let p2 = p1 + dir0;
+            if board.get(p1) == Square::Unknown {
+                board.set(p1, Square::Corridor);
+                board.set(p2, Square::Corridor);
 
-                for (dx, dy) in vec![(1, 0), (0, 1), (-1, 0), (0, -1)] {
-                    let (x3, y3) = (x2 + dx, y2 + dy);
-                    let (x4, y4) = (x3 + dx, y3 + dy);
-                    if board.get((x3, y3)) == Square::Unknown {
-                        if board.get((x4, y4)) == Square::Unknown {
-                            add_move(&mut open, arg, (x2, y2), (dx, dy));
+                for dir1 in Vec2::directions() {
+                    let p3 = p2 + dir1;
+                    let p4 = p3 + dir1;
+                    if board.get(p3) == Square::Unknown {
+                        if board.get(p4) == Square::Unknown {
+                            add_move(&mut open, arg, p2, dir1);
                         } else {
-                            board.set((x3, y3), Square::Wall);
+                            board.set(p3, Square::Wall);
                         }
                     }
                 }
@@ -177,12 +180,12 @@ fn main() -> std::io::Result<()> {
             }
 
             if open.is_empty() {
-                board.set((1, 1), Square::Start);
-                board.set((x_maze_size - 2, y_maze_size - 2), Square::Finish);
+                board.set(p2!(1, 1), Square::Start);
+                board.set(p2!(maze_size.x - 2, maze_size.y - 2), Square::Finish);
             }
         }
 
-        let mut buf = Vec::with_capacity((x_size * y_size * 3) as usize);
+        let mut buf = Vec::with_capacity((board_size.x * board_size.y * 3) as usize);
         send(&mut buf, &board)?;
         stdout().write_all(&buf)?;
         stdout().flush()?;
