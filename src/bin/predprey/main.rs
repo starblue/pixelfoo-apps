@@ -9,8 +9,8 @@ use rand::thread_rng;
 use rand::Rng;
 
 use pixelfoo::color::Color;
-use pixelfoo::p2;
 use pixelfoo::point2d::Point2d;
+use pixelfoo::rect2d::Rect2d;
 use pixelfoo::vec2d::Vec2d;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -92,6 +92,8 @@ fn main() -> std::io::Result<()> {
     let t_frame = 0.040; // s
     let delay = Duration::new(0, (1_000_000_000.0 * t_frame) as u32);
 
+    let board_rect = Rect2d::new(0, x_size as i32, 0, y_size as i32);
+
     // mid point of the board
     let x_mid = (x_size - 1) as f64 / 2.0;
     let y_mid = (y_size - 1) as f64 / 2.0;
@@ -101,11 +103,10 @@ fn main() -> std::io::Result<()> {
 
     loop {
         for _ in 0..arg {
-            let x = rng.gen_range(0, x_size);
-            let y = rng.gen_range(0, y_size);
-            let sq = board[y][x];
-            let dx = (x as f64 - x_mid as f64) / r as f64;
-            let dy = (y as f64 - y_mid as f64) / r as f64;
+            let pos = board_rect.random_point(&mut rng);
+            let sq = board[pos.y as usize][pos.x as usize];
+            let dx = (pos.x as f64 - x_mid as f64) / r as f64;
+            let dy = (pos.y as f64 - y_mid as f64) / r as f64;
             let p0 = (dx * dx + dy * dy).min(1.0);
             let p_survive = match sq {
                 Square::Empty => 1.0,
@@ -118,8 +119,7 @@ fn main() -> std::io::Result<()> {
             } else {
                 Square::Empty
             };
-            let pos = p2!(x as i32, y as i32);
-            board[y][x] = match sq {
+            board[pos.y as usize][pos.x as usize] = match sq {
                 Square::Empty => grow(&board, pos, Square::Grass, new_sq),
                 Square::Grass => grow(&board, pos, Square::Rabbit, new_sq),
                 Square::Rabbit => grow(&board, pos, Square::Fox, new_sq),
