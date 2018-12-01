@@ -9,6 +9,9 @@ use rand::thread_rng;
 use rand::Rng;
 
 use pixelfoo::color::Color;
+use pixelfoo::p2;
+use pixelfoo::point2d::Point2d;
+use pixelfoo::vec2d::Vec2d;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Square {
@@ -37,16 +40,13 @@ fn send<T: Write>(w: &mut T, board: &Board) -> std::io::Result<()> {
 
 const DEFAULT_ARG: usize = 10;
 
-fn grow(board: &Board, x: usize, y: usize, grow: Square, die: Square) -> Square {
-    let x_size = board[0].len() as isize;
-    let y_size = board.len() as isize;
-    let x = x as isize;
-    let y = y as isize;
-    for (dx, dy) in vec![(1, 0), (0, 1), (-1, 0), (0, -1)] {
-        let x1 = x + dx;
-        let y1 = y + dy;
-        if 0 <= x1 && x1 < x_size && 0 <= y1 && y1 < y_size {
-            let neigh_sq = board[y1 as usize][x1 as usize];
+fn grow(board: &Board, pos: Point2d, grow: Square, die: Square) -> Square {
+    let x_size = board[0].len() as i32;
+    let y_size = board.len() as i32;
+    for dir in Vec2d::directions() {
+        let pos1 = pos + dir;
+        if 0 <= pos1.x && pos1.x < x_size && 0 <= pos1.y && pos1.y < y_size {
+            let neigh_sq = board[pos1.y as usize][pos1.x as usize];
             if neigh_sq == grow {
                 return grow;
             }
@@ -92,9 +92,13 @@ fn main() -> std::io::Result<()> {
     let t_frame = 0.040; // s
     let delay = Duration::new(0, (1_000_000_000.0 * t_frame) as u32);
 
+    // mid point of the board
     let x_mid = (x_size - 1) as f64 / 2.0;
     let y_mid = (y_size - 1) as f64 / 2.0;
+
+    // radius of the death zone in the middle
     let r = (x_size.min(y_size) - 1) as f64 / 2.5;
+
     loop {
         for _ in 0..arg {
             let x = rng.gen_range(0, x_size);
@@ -114,13 +118,15 @@ fn main() -> std::io::Result<()> {
             } else {
                 Square::Empty
             };
+            let pos = p2!(x as i32, y as i32);
             board[y][x] = match sq {
-                Square::Empty => grow(&board, x, y, Square::Grass, new_sq),
-                Square::Grass => grow(&board, x, y, Square::Rabbit, new_sq),
-                Square::Rabbit => grow(&board, x, y, Square::Fox, new_sq),
+                Square::Empty => grow(&board, pos, Square::Grass, new_sq),
+                Square::Grass => grow(&board, pos, Square::Rabbit, new_sq),
+                Square::Rabbit => grow(&board, pos, Square::Fox, new_sq),
                 Square::Fox => new_sq,
             };
         }
+
         let mut buf = Vec::with_capacity(x_size * y_size * 3);
         send(&mut buf, &board)?;
         stdout().write_all(&buf)?;
