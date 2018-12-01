@@ -1,5 +1,5 @@
 pub mod color;
 #[macro_use]
-pub mod point2;
+pub mod point2d;
 #[macro_use]
-pub mod vec2;
+pub mod vec2d;

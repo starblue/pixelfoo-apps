@@ -9,9 +9,9 @@ use rand::Rng;
 
 use pixelfoo::color::Color;
 use pixelfoo::p2;
-use pixelfoo::point2::Point2;
+use pixelfoo::point2d::Point2d;
 use pixelfoo::v2;
-use pixelfoo::vec2::Vec2;
+use pixelfoo::vec2d::Vec2d;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Square {
@@ -41,7 +41,7 @@ fn send<T: Write>(w: &mut T, board: &Board) -> std::io::Result<()> {
 }
 
 impl Board {
-    fn new(board_size: Vec2, maze_size: Vec2) -> Board {
+    fn new(board_size: Vec2d, maze_size: Vec2d) -> Board {
         Board(
             (0..board_size.y)
                 .map(move |y| {
@@ -67,21 +67,21 @@ impl Board {
                 .collect::<Vec<_>>(),
         )
     }
-    fn get(&self, pos: Point2) -> Square {
+    fn get(&self, pos: Point2d) -> Square {
         self.0[pos.y as usize][pos.x as usize]
     }
-    fn set(&mut self, pos: Point2, sq: Square) {
+    fn set(&mut self, pos: Point2d, sq: Square) {
         self.0[pos.y as usize][pos.x as usize] = sq;
     }
 }
 
 struct Move {
-    from: Point2,
-    dir: Vec2,
+    from: Point2d,
+    dir: Vec2d,
     prio: i32,
 }
 
-fn add_move(open: &mut Vec<Move>, arg: isize, from: Point2, dir: Vec2) {
+fn add_move(open: &mut Vec<Move>, arg: isize, from: Point2d, dir: Vec2d) {
     open.push(Move { from, dir, prio: 0 });
     open.sort_unstable_by(|Move { prio: pa, .. }, Move { prio: pb, .. }| pa.cmp(pb));
 }
@@ -164,7 +164,7 @@ fn main() -> std::io::Result<()> {
                 board.set(p1, Square::Corridor);
                 board.set(p2, Square::Corridor);
 
-                for dir1 in Vec2::directions() {
+                for dir1 in Vec2d::directions() {
                     let p3 = p2 + dir1;
                     let p4 = p3 + dir1;
                     if board.get(p3) == Square::Unknown {
