@@ -74,7 +74,7 @@ fn grow(board: &Board, pos: Point2d, grow: Square, die: Square) -> Square {
     for dir in Vec2d::directions() {
         let pos1 = pos + dir;
         if board.rect().contains(pos1) {
-            let neigh_sq = board.get(pos);
+            let neigh_sq = board.get(pos1);
             if neigh_sq == grow {
                 return grow;
             }
