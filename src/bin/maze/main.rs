@@ -39,7 +39,15 @@ fn send<T: Write>(w: &mut T, board: &Board) -> std::io::Result<()> {
         for square in line {
             let c = match square {
                 Square::Unused => Color::black(),
-                Square::Unknown { .. } => Color::black(),
+                Square::Unknown { prio } => {
+                    if *prio == 0 {
+                        Color::black()
+                    } else if *prio < 0 {
+                        Color::lightblue()
+                    } else {
+                        Color::darkyellow()
+                    }
+                }
                 Square::Corridor => Color::yellow(),
                 Square::Wall => Color::darkblue(),
                 Square::Start => Color::red(),
@@ -93,19 +101,27 @@ impl Board {
 
     fn set_orientation(&mut self, desired: Orientation, pos: Point2d) {
         let sq = self.get(pos);
-        let actual;
         match sq {
             Square::Unknown { .. } => {
-                // determine corridor orientation
+                let prio;
                 if pos.x % 2 == 0 && pos.y % 2 != 0 {
-                    actual = Orientation::Horizontal;
+                    // horizontal corridor, vertical wall
+                    prio = if desired == Orientation::Horizontal {
+                        10
+                    } else {
+                        -10
+                    };
                 } else if pos.x % 2 != 0 && pos.y % 2 == 0 {
-                    actual = Orientation::Vertical;
+                    // vertical corridor, horizontal wall
+                    prio = if desired == Orientation::Vertical {
+                        10
+                    } else {
+                        -10
+                    };
                 } else {
-                    // not a potential wall, unused
-                    actual = Orientation::Horizontal;
+                    // always corridor at the end
+                    prio = 0;
                 }
-                let prio = if actual == desired { 10 } else { -10 };
                 self.set(pos, Square::Unknown { prio });
             }
             _ => (),
