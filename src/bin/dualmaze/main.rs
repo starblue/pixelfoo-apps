@@ -103,7 +103,7 @@ impl Board {
                     // not a potential wall, unused
                     actual = Orientation::Horizontal;
                 }
-                let prio = if actual == desired { -5 } else { 5 };
+                let prio = if actual == desired { 10 } else { -10 };
                 self.set(pos, Square::Unknown { prio });
             }
             _ => (),
@@ -218,7 +218,7 @@ fn main() -> std::io::Result<()> {
                 t_wait = 60.0; // s
                 board = Board::new(board_size, maze_size);
 
-                // TODO draw stuff in prios
+                // draw stuff in prios
                 let segment_size = v2d(11, 5);
                 board.draw_7_segments(p2d(6, 8), segment_size, 0x06);
                 board.draw_7_segments(p2d(24, 8), segment_size, 0x4f);
@@ -253,7 +253,7 @@ fn main() -> std::io::Result<()> {
         let work = arg.max(1);
         let mut count = 0;
         while !open.is_empty() && count < work {
-            open.sort_unstable_by(|Move { prio: pa, .. }, Move { prio: pb, .. }| pb.cmp(pa));
+            open.sort_unstable_by(|Move { prio: pa, .. }, Move { prio: pb, .. }| pa.cmp(pb));
             let Move {
                 from: p0,
                 dir: dir0,
