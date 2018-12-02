@@ -36,6 +36,12 @@ impl Color {
     pub fn darkblue() -> Color {
         Color(0, 0, 127)
     }
+    pub fn lightblue() -> Color {
+        Color(127, 127, 255)
+    }
+    pub fn darkyellow() -> Color {
+        Color(127, 127, 0)
+    }
     pub fn darkbrown() -> Color {
         Color(139, 69, 19)
     }
