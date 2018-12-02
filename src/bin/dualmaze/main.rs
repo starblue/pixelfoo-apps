@@ -4,6 +4,9 @@ use std::io::Write;
 use std::thread::sleep;
 use std::time::Duration;
 
+use chrono::Local;
+use chrono::Timelike;
+
 use rand::thread_rng;
 use rand::Rng;
 
@@ -179,6 +182,11 @@ impl Board {
             self.draw_horizontal_segment(pos + v2d(1, delta), hsize);
         }
     }
+    fn draw_digit(&mut self, pos: Point2d, size: Vec2d, digit: u8) {
+        let segment_table = vec![0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f];
+        let segments = segment_table[digit as usize];
+        self.draw_7_segments(pos, size, segments);
+    }
 }
 
 struct Move {
@@ -215,31 +223,35 @@ fn main() -> std::io::Result<()> {
 
     let t_frame = 0.040; // s
     let delay = Duration::new(0, (1_000_000_000.0 * t_frame) as u32);
-    let mut t_wait = 0.0; // s
 
     let board_size = v2d(x_size as i32, y_size as i32);
     // round down to odd size for maze
     let maze_size = v2d(
         (board_size.x - 1) / 2 * 2 + 1,
-        (board_size.y - 1) / 2 * 2 + 1
+        (board_size.y - 1) / 2 * 2 + 1,
     );
 
     let mut board = Board(Vec::new());
     let mut open = Vec::new();
+    let mut last_drawn_minute = 99;
     loop {
         if open.is_empty() {
-            if t_wait > 0.0 {
-                t_wait -= t_frame;
-            } else {
-                t_wait = 60.0; // s
+            // get time
+            let dt = Local::now();
+            let h = dt.hour();
+            let m = dt.minute();
+
+            if m != last_drawn_minute {
+                last_drawn_minute = m;
+
                 board = Board::new(board_size, maze_size);
 
-                // draw stuff in prios
+                // draw time in prios
                 let segment_size = v2d(11, 5);
-                board.draw_7_segments(p2d(6, 8), segment_size, 0x06);
-                board.draw_7_segments(p2d(24, 8), segment_size, 0x4f);
-                board.draw_7_segments(p2d(42, 8), segment_size, 0x4f);
-                board.draw_7_segments(p2d(60, 8), segment_size, 0x07);
+                board.draw_digit(p2d(6, 8), segment_size, (h / 10) as u8);
+                board.draw_digit(p2d(24, 8), segment_size, (h % 10) as u8);
+                board.draw_digit(p2d(42, 8), segment_size, (m / 10) as u8);
+                board.draw_digit(p2d(60, 8), segment_size, (m % 10) as u8);
 
                 // start building walls from the border
                 for x in (2..(maze_size.x - 2)).step_by(2) {
