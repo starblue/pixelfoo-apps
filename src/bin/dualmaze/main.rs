@@ -154,10 +154,10 @@ impl Board {
             self.draw_horizontal_segment(pos + v2d(1, 2 * delta), hsize);
         }
         if (segments & (1 << 4)) != 0 {
-            self.draw_vertical_segment(pos + v2d(0, 1), vsize);
+            self.draw_vertical_segment(pos + v2d(0, delta + 1), vsize);
         }
         if (segments & (1 << 5)) != 0 {
-            self.draw_vertical_segment(pos + v2d(0, delta + 1), vsize);
+            self.draw_vertical_segment(pos + v2d(0, 1), vsize);
         }
         if (segments & (1 << 6)) != 0 {
             self.draw_horizontal_segment(pos + v2d(1, delta), hsize);
