@@ -103,7 +103,7 @@ impl Board {
                     // not a potential wall, unused
                     actual = Orientation::Horizontal;
                 }
-                let prio = if actual == desired { -1 } else { 1 };
+                let prio = if actual == desired { -5 } else { 5 };
                 self.set(pos, Square::Unknown { prio });
             }
             _ => (),
@@ -179,7 +179,7 @@ where
         open.push(Move {
             from,
             dir,
-            prio: prio * 1000 + rng.gen_range(0, 1000),
+            prio: prio * 100 + rng.gen_range(0, 1000),
         });
     }
 }
