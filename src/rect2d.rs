@@ -1,8 +1,8 @@
 use rand::Rng;
 
-use crate::p2;
+use crate::point2d::p2d;
 use crate::point2d::Point2d;
-use crate::v2;
+use crate::vec2d::v2d;
 use crate::vec2d::Vec2d;
 
 pub struct Rect2d {
@@ -13,8 +13,8 @@ pub struct Rect2d {
 impl Rect2d {
     pub fn new(x0: i32, x1: i32, y0: i32, y1: i32) -> Rect2d {
         assert!(x0 <= x1 && y0 <= y1);
-        let origin = p2!(x0, y0);
-        let size = v2!(x1 - x0, y1 - y0);
+        let origin = p2d(x0, y0);
+        let size = v2d(x1 - x0, y1 - y0);
         Rect2d { origin, size }
     }
 
@@ -49,6 +49,10 @@ impl Rect2d {
     {
         let x = rng.gen_range(self.left(), self.right());
         let y = rng.gen_range(self.bottom(), self.top());
-        p2!(x, y)
+        p2d(x, y)
     }
+}
+
+pub fn r2d(x0: i32, x1: i32, y0: i32, y1: i32) -> Rect2d {
+    Rect2d::new(x0, x1, y0, y1)
 }

@@ -1,12 +1,5 @@
 use std::ops::Add;
 
-#[macro_export]
-macro_rules! v2 {
-    ( $x:expr, $y:expr ) => {
-        Vec2d::new($x, $y)
-    };
-}
-
 #[derive(Clone, Copy, Debug)]
 pub struct Vec2d {
     pub x: i32,
@@ -19,8 +12,12 @@ impl Vec2d {
     }
 
     pub fn directions() -> Vec<Vec2d> {
-        vec![v2!(1, 0), v2!(0, 1), v2!(-1, 0), v2!(0, -1)]
+        vec![v2d(1, 0), v2d(0, 1), v2d(-1, 0), v2d(0, -1)]
     }
+}
+
+pub fn v2d(x: i32, y: i32) -> Vec2d {
+    Vec2d::new(x, y)
 }
 
 impl Add for Vec2d {

@@ -2,13 +2,6 @@ use std::ops::Add;
 
 use crate::vec2d::Vec2d;
 
-#[macro_export]
-macro_rules! p2 {
-    ( $x:expr, $y:expr ) => {
-        Point2d::new($x, $y)
-    };
-}
-
 #[derive(Clone, Copy, Debug)]
 pub struct Point2d {
     pub x: i32,
@@ -23,6 +16,10 @@ impl Point2d {
     pub fn neighbours(&self) -> Vec<Point2d> {
         Vec2d::directions().iter().map(|v| self + v).collect()
     }
+}
+
+pub fn p2d(x: i32, y: i32) -> Point2d {
+    Point2d::new(x, y)
 }
 
 impl Add<Vec2d> for Point2d {

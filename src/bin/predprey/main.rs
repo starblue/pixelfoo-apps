@@ -11,7 +11,7 @@ use rand::Rng;
 use pixelfoo::color::Color;
 use pixelfoo::point2d::Point2d;
 use pixelfoo::rect2d::Rect2d;
-use pixelfoo::v2;
+use pixelfoo::vec2d::v2d;
 use pixelfoo::vec2d::Vec2d;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -39,7 +39,7 @@ impl Board {
     pub fn size(&self) -> Vec2d {
         let x_size = self.0[0].len() as i32;
         let y_size = self.0.len() as i32;
-        v2!(x_size, y_size)
+        v2d(x_size, y_size)
     }
     pub fn rect(&self) -> Rect2d {
         Rect2d::new(0, self.size().x, 0, self.size().y)
@@ -92,7 +92,7 @@ fn main() -> std::io::Result<()> {
     eprintln!("screen size {}x{}, arg {}", x_size, y_size, arg);
 
     let mut rng = thread_rng();
-    let size = v2!(x_size as i32, y_size as i32);
+    let size = v2d(x_size as i32, y_size as i32);
 
     let p_empty = 0.25;
     let p_grass = 0.25;

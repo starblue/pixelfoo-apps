@@ -8,9 +8,9 @@ use rand::thread_rng;
 use rand::Rng;
 
 use pixelfoo::color::Color;
-use pixelfoo::p2;
+use pixelfoo::point2d::p2d;
 use pixelfoo::point2d::Point2d;
-use pixelfoo::v2;
+use pixelfoo::vec2d::v2d;
 use pixelfoo::vec2d::Vec2d;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -103,14 +103,14 @@ fn main() -> std::io::Result<()> {
     let delay = Duration::new(0, (1_000_000_000.0 * t_frame) as u32);
     let mut t_wait = 0.0; // s
 
-    let board_size = v2!(x_size as i32, y_size as i32);
+    let board_size = v2d(x_size as i32, y_size as i32);
     // round down to odd size for maze
-    let maze_size = v2!(
+    let maze_size = v2d(
         (board_size.x - 1) / 2 * 2 + 1,
         (board_size.y - 1) / 2 * 2 + 1
     );
     // pick odd position at or near the middle
-    let maze_mid = p2!((maze_size.x - 1) / 4 * 2 + 1, (maze_size.y - 1) / 4 * 2 + 1);
+    let maze_mid = p2d((maze_size.x - 1) / 4 * 2 + 1, (maze_size.y - 1) / 4 * 2 + 1);
 
     let mut board = Board(Vec::new());
     let mut open = Vec::new();
@@ -124,10 +124,10 @@ fn main() -> std::io::Result<()> {
 
                 // start in the middle
                 board.set(maze_mid, Square::Corridor);
-                add_move(&mut open, arg, maze_mid, v2!(1, 0));
-                add_move(&mut open, arg, maze_mid, v2!(0, 1));
-                add_move(&mut open, arg, maze_mid, v2!(-1, 0));
-                add_move(&mut open, arg, maze_mid, v2!(0, -1));
+                add_move(&mut open, arg, maze_mid, v2d(1, 0));
+                add_move(&mut open, arg, maze_mid, v2d(0, 1));
+                add_move(&mut open, arg, maze_mid, v2d(-1, 0));
+                add_move(&mut open, arg, maze_mid, v2d(0, -1));
             }
         }
 
@@ -180,8 +180,8 @@ fn main() -> std::io::Result<()> {
             }
 
             if open.is_empty() {
-                board.set(p2!(1, 1), Square::Start);
-                board.set(p2!(maze_size.x - 2, maze_size.y - 2), Square::Finish);
+                board.set(p2d(1, 1), Square::Start);
+                board.set(p2d(maze_size.x - 2, maze_size.y - 2), Square::Finish);
             }
         }
 

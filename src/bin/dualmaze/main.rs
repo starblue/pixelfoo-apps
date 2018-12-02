@@ -8,9 +8,9 @@ use rand::thread_rng;
 use rand::Rng;
 
 use pixelfoo::color::Color;
-use pixelfoo::p2;
+use pixelfoo::point2d::p2d;
 use pixelfoo::point2d::Point2d;
-use pixelfoo::v2;
+use pixelfoo::vec2d::v2d;
 use pixelfoo::vec2d::Vec2d;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -118,20 +118,20 @@ impl Board {
     fn draw_horizontal_segment(&mut self, pos: Point2d, size: Vec2d) {
         for x in 0..size.x {
             let xn = size.x - 1 - x;
-            self.set_horizontal(pos + v2!(x, 0));
+            self.set_horizontal(pos + v2d(x, 0));
             for y in 1..x.min(xn).min(size.y / 2) + 1 {
-                self.set_horizontal(pos + v2!(x, y));
-                self.set_horizontal(pos + v2!(x, -y));
+                self.set_horizontal(pos + v2d(x, y));
+                self.set_horizontal(pos + v2d(x, -y));
             }
         }
     }
     fn draw_vertical_segment(&mut self, pos: Point2d, size: Vec2d) {
         for y in 0..size.y {
             let yn = size.y - 1 - y;
-            self.set_vertical(pos + v2!(0, y));
+            self.set_vertical(pos + v2d(0, y));
             for x in 1..y.min(yn).min(size.x / 2) + 1 {
-                self.set_vertical(pos + v2!(x, y));
-                self.set_vertical(pos + v2!(-x, y));
+                self.set_vertical(pos + v2d(x, y));
+                self.set_vertical(pos + v2d(-x, y));
             }
         }
     }
@@ -139,28 +139,28 @@ impl Board {
         let length = size.x;
         let width = size.y;
         let delta = length + 1;
-        let hsize = v2!(length, width);
-        let vsize = v2!(width, length);
+        let hsize = v2d(length, width);
+        let vsize = v2d(width, length);
         if (segments & (1 << 0)) != 0 {
-            self.draw_horizontal_segment(pos + v2!(1, 0), hsize);
+            self.draw_horizontal_segment(pos + v2d(1, 0), hsize);
         }
         if (segments & (1 << 1)) != 0 {
-            self.draw_vertical_segment(pos + v2!(delta, 1), vsize);
+            self.draw_vertical_segment(pos + v2d(delta, 1), vsize);
         }
         if (segments & (1 << 2)) != 0 {
-            self.draw_vertical_segment(pos + v2!(delta, delta + 1), vsize);
+            self.draw_vertical_segment(pos + v2d(delta, delta + 1), vsize);
         }
         if (segments & (1 << 3)) != 0 {
-            self.draw_horizontal_segment(pos + v2!(1, 2 * delta), hsize);
+            self.draw_horizontal_segment(pos + v2d(1, 2 * delta), hsize);
         }
         if (segments & (1 << 4)) != 0 {
-            self.draw_vertical_segment(pos + v2!(0, 1), vsize);
+            self.draw_vertical_segment(pos + v2d(0, 1), vsize);
         }
         if (segments & (1 << 5)) != 0 {
-            self.draw_vertical_segment(pos + v2!(0, delta + 1), vsize);
+            self.draw_vertical_segment(pos + v2d(0, delta + 1), vsize);
         }
         if (segments & (1 << 6)) != 0 {
-            self.draw_horizontal_segment(pos + v2!(1, delta), hsize);
+            self.draw_horizontal_segment(pos + v2d(1, delta), hsize);
         }
     }
 }
@@ -201,9 +201,9 @@ fn main() -> std::io::Result<()> {
     let delay = Duration::new(0, (1_000_000_000.0 * t_frame) as u32);
     let mut t_wait = 0.0; // s
 
-    let board_size = v2!(x_size as i32, y_size as i32);
+    let board_size = v2d(x_size as i32, y_size as i32);
     // round down to odd size for maze
-    let maze_size = v2!(
+    let maze_size = v2d(
         (board_size.x - 1) / 2 * 2 + 1,
         (board_size.y - 1) / 2 * 2 + 1
     );
@@ -219,31 +219,31 @@ fn main() -> std::io::Result<()> {
                 board = Board::new(board_size, maze_size);
 
                 // TODO draw stuff in prios
-                let segment_size = v2!(11, 5);
-                board.draw_7_segments(p2!(6, 8), segment_size, 0x06);
-                board.draw_7_segments(p2!(24, 8), segment_size, 0x4f);
-                board.draw_7_segments(p2!(42, 8), segment_size, 0x4f);
-                board.draw_7_segments(p2!(60, 8), segment_size, 0x07);
+                let segment_size = v2d(11, 5);
+                board.draw_7_segments(p2d(6, 8), segment_size, 0x06);
+                board.draw_7_segments(p2d(24, 8), segment_size, 0x4f);
+                board.draw_7_segments(p2d(42, 8), segment_size, 0x4f);
+                board.draw_7_segments(p2d(60, 8), segment_size, 0x07);
 
                 // start building walls from the border
                 for x in (2..(maze_size.x - 2)).step_by(2) {
-                    add_move(&board, &mut open, &mut rng, p2!(x, 0), v2!(0, 1));
+                    add_move(&board, &mut open, &mut rng, p2d(x, 0), v2d(0, 1));
                     add_move(
                         &board,
                         &mut open,
                         &mut rng,
-                        p2!(x, maze_size.y - 1),
-                        v2!(0, -1),
+                        p2d(x, maze_size.y - 1),
+                        v2d(0, -1),
                     );
                 }
                 for y in (2..(maze_size.y - 2)).step_by(2) {
-                    add_move(&board, &mut open, &mut rng, p2!(0, y), v2!(1, 0));
+                    add_move(&board, &mut open, &mut rng, p2d(0, y), v2d(1, 0));
                     add_move(
                         &board,
                         &mut open,
                         &mut rng,
-                        p2!(maze_size.x - 1, y),
-                        v2!(-1, 0),
+                        p2d(maze_size.x - 1, y),
+                        v2d(-1, 0),
                     );
                 }
             }
@@ -282,8 +282,8 @@ fn main() -> std::io::Result<()> {
             }
 
             if open.is_empty() {
-                board.set(p2!(1, 1), Square::Start);
-                board.set(p2!(maze_size.x - 2, maze_size.y - 2), Square::Finish);
+                board.set(p2d(1, 1), Square::Start);
+                board.set(p2d(maze_size.x - 2, maze_size.y - 2), Square::Finish);
             }
         }
 
