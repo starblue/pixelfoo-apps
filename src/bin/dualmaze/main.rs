@@ -45,7 +45,7 @@ fn send<T: Write>(w: &mut T, board: &Board) -> std::io::Result<()> {
                 Square::Unknown { prio } => {
                     if *prio == 0 {
                         Color::black()
-                    } else if *prio < 0 {
+                    } else if *prio > 0 {
                         Color::lightblue()
                     } else {
                         Color::darkyellow()
@@ -248,10 +248,10 @@ fn main() -> std::io::Result<()> {
 
                 // draw time in prios
                 let segment_size = v2d(11, 5);
-                board.draw_digit(p2d(6, 8), segment_size, (h / 10) as u8);
-                board.draw_digit(p2d(24, 8), segment_size, (h % 10) as u8);
-                board.draw_digit(p2d(42, 8), segment_size, (m / 10) as u8);
-                board.draw_digit(p2d(60, 8), segment_size, (m % 10) as u8);
+                board.draw_digit(p2d(5, 7), segment_size, (h / 10) as u8);
+                board.draw_digit(p2d(23, 7), segment_size, (h % 10) as u8);
+                board.draw_digit(p2d(41, 7), segment_size, (m / 10) as u8);
+                board.draw_digit(p2d(59, 7), segment_size, (m % 10) as u8);
 
                 // start building walls from the border
                 for x in (2..(maze_size.x - 2)).step_by(2) {
