@@ -2,7 +2,7 @@ use std::ops::Add;
 
 use crate::vec2d::Vec2d;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Point2d {
     pub x: i32,
     pub y: i32,

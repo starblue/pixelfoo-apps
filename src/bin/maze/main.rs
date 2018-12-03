@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+use std::collections::BinaryHeap;
 use std::env::args;
 use std::io::stdout;
 use std::io::Write;
@@ -191,13 +193,26 @@ impl Board {
     }
 }
 
+#[derive(PartialEq, Eq)]
 struct Move {
     from: Point2d,
     dir: Vec2d,
     prio: i32,
 }
 
-fn add_move<R>(board: &Board, open: &mut Vec<Move>, rng: &mut R, from: Point2d, dir: Vec2d)
+impl PartialOrd for Move {
+    fn partial_cmp(&self, other: &Move) -> Option<Ordering> {
+        self.prio.partial_cmp(&other.prio)
+    }
+}
+
+impl Ord for Move {
+    fn cmp(&self, other: &Move) -> Ordering {
+        self.prio.cmp(&other.prio)
+    }
+}
+
+fn add_move<R>(board: &Board, open: &mut BinaryHeap<Move>, rng: &mut R, from: Point2d, dir: Vec2d)
 where
     R: Rng,
 {
@@ -236,7 +251,7 @@ fn main() -> std::io::Result<()> {
     let maze_mid = p2d((maze_size.x - 1) / 4 * 2 + 1, (maze_size.y - 1) / 4 * 2 + 1);
 
     let mut board = Board(Vec::new());
-    let mut open = Vec::new();
+    let mut open = BinaryHeap::new();
     let mut last_drawn_minute = 99;
     loop {
         if open.is_empty() {
@@ -270,7 +285,6 @@ fn main() -> std::io::Result<()> {
         let work = arg.max(1);
         let mut count = 0;
         while !open.is_empty() && count < work {
-            open.sort_unstable_by(|Move { prio: pa, .. }, Move { prio: pb, .. }| pa.cmp(pb));
             let Move {
                 from: p0,
                 dir: dir0,
