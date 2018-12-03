@@ -193,12 +193,20 @@ impl Board {
     }
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(Debug)]
 struct Move {
     from: Point2d,
     dir: Vec2d,
     prio: i32,
 }
+
+impl PartialEq for Move {
+    fn eq(&self, other: &Move) -> bool {
+        self.prio == other.prio
+    }
+}
+
+impl Eq for Move {}
 
 impl PartialOrd for Move {
     fn partial_cmp(&self, other: &Move) -> Option<Ordering> {
