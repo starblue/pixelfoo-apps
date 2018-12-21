@@ -19,6 +19,7 @@ fn send<T: Write>(w: &mut T, f: &Frame) -> std::io::Result<()> {
 }
 
 const DEFAULT_LOOP_TIME: usize = 120;
+const MIN_LOOP_TIME: usize = 20;
 
 fn main() -> std::io::Result<()> {
     let args = args().collect::<Vec<_>>();
@@ -26,7 +27,10 @@ fn main() -> std::io::Result<()> {
 
     let x_size = args[1].parse::<usize>().unwrap();
     let y_size = args[2].parse::<usize>().unwrap();
-    let loop_time = args[3].parse::<usize>().unwrap_or(DEFAULT_LOOP_TIME);
+    let loop_time = args[3]
+        .parse::<usize>()
+        .unwrap_or(DEFAULT_LOOP_TIME)
+        .min(MIN_LOOP_TIME);
     eprintln!(
         "screen size {}x{}, loop time {:?}s",
         x_size, y_size, loop_time
