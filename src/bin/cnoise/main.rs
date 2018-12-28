@@ -32,8 +32,8 @@ fn main() -> std::io::Result<()> {
     let t_frame = 0.040; // s
     let delay = Duration::new(0, (1_000_000_000.0 * t_frame) as u32);
 
-    let c0 = Color::new(0, 160, 95);
-    let c1 = Color::new(0, 138, 170);
+    let c0 = Color::new(0, 138, 170);
+    let c1 = Color::new(0, 160, 95);
 
     let mut rng = thread_rng();
 
