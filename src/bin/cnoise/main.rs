@@ -43,7 +43,7 @@ fn main() -> std::io::Result<()> {
     loop {
         let x = rng.gen_range(0, x_size);
         let y = rng.gen_range(0, y_size);
-        let c = c0.interpolate(c1, rng.gen::<f64>());
+        let c = c0.interpolate(c1, rng.gen::<f64>().powf(2.0));
         frame[y][x] = c;
 
         let mut buf = Vec::with_capacity(x_size * y_size * 3);
