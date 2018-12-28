@@ -30,7 +30,7 @@ fn main() -> std::io::Result<()> {
     let loop_time = args[3]
         .parse::<usize>()
         .unwrap_or(DEFAULT_LOOP_TIME)
-        .min(MIN_LOOP_TIME);
+        .max(MIN_LOOP_TIME);
     eprintln!(
         "screen size {}x{}, loop time {:?}s",
         x_size, y_size, loop_time
