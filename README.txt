@@ -4,7 +4,10 @@ bimood - color cycling mood lamp with two complementary colors
 predprey - grass-prey-predator simulation
     parameter is number of actions per 40ms frame
 
-maze - draws a maze
+maze - draws a maze by drawing corridors
+    parameter is number of actions per 40ms frame
+
+dualmaze - draws a maze by drawing walls
     parameter is number of actions per 40ms frame
 
 Compile with "cargo build --release".
