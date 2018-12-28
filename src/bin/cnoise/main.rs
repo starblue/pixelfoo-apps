@@ -32,9 +32,8 @@ fn main() -> std::io::Result<()> {
     let t_frame = 0.040; // s
     let delay = Duration::new(0, (1_000_000_000.0 * t_frame) as u32);
 
-    let colors = vec![Color::black(), Color::cyan(), Color::blue()];
-
-    // time to interpolate from one color to the next
+    let c0 = Color::new(0, 160, 95);
+    let c1 = Color::new(0, 138, 170);
 
     let mut rng = thread_rng();
 
@@ -44,7 +43,7 @@ fn main() -> std::io::Result<()> {
     loop {
         let x = rng.gen_range(0, x_size);
         let y = rng.gen_range(0, y_size);
-        let c = colors[rng.gen_range(0, colors.len())];
+        let c = c0.interpolate(c1, rng.gen::<f64>());
         frame[y][x] = c;
 
         let mut buf = Vec::with_capacity(x_size * y_size * 3);

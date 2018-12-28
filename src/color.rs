@@ -3,6 +3,9 @@ pub struct Color(u8, u8, u8);
 
 #[allow(unused)]
 impl Color {
+    pub fn new(r: u8, g: u8, b: u8) -> Color {
+        Color(r, g, b)
+    }
     pub fn black() -> Color {
         Color(0, 0, 0)
     }
