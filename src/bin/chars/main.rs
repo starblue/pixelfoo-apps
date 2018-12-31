@@ -70,8 +70,10 @@ fn main() -> std::io::Result<()> {
         .collect::<Vec<_>>();
     for x in 0..(x_size / 8) {
         for y in 0..(y_size / 8) {
-            let fg = colors[rng.gen_range(0, colors.len())];
-            let bg = colors[rng.gen_range(0, colors.len())];
+            let fg = colors[rng.gen_range(0, colors.len())]
+                .interpolate(Color::black(), 0.8 * rng.gen::<f64>());
+            let bg = colors[rng.gen_range(0, colors.len())]
+                .interpolate(Color::black(), 0.8 * rng.gen::<f64>());
             let start_index = rng.gen_range(0, buffer.len() / 8) * 8;
             let bitmap = &buffer[start_index..(start_index + 8)];
             paint_char(&mut frame, x, y, bitmap, fg, bg);
@@ -81,8 +83,10 @@ fn main() -> std::io::Result<()> {
         if rng.gen::<f64>() < 0.02 {
             let x = rng.gen_range(0, x_size / 8);
             let y = rng.gen_range(0, y_size / 8);
-            let fg = colors[rng.gen_range(0, colors.len())];
-            let bg = colors[rng.gen_range(0, colors.len())];
+            let fg = colors[rng.gen_range(0, colors.len())]
+                .interpolate(Color::black(), 0.8 * rng.gen::<f64>());
+            let bg = colors[rng.gen_range(0, colors.len())]
+                .interpolate(Color::black(), 0.8 * rng.gen::<f64>());
             let start_index = rng.gen_range(0, buffer.len() / 8) * 8;
             let bitmap = &buffer[start_index..(start_index + 8)];
             paint_char(&mut frame, x, y, bitmap, fg, bg);
