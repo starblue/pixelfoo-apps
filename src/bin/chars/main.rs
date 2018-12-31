@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::stdout;
 use std::io::Read;
 use std::io::Write;
-use std::iter::repeat_with;
+use std::iter::repeat;
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -23,17 +23,6 @@ fn send<T: Write>(w: &mut T, f: &Frame) -> std::io::Result<()> {
     w.flush()
 }
 
-fn pick_color<R>(c0: Color, c1: Color, rng: &mut R) -> Color
-where
-    R: Rng,
-{
-    if rng.gen::<f64>() < 0.5 {
-        c0.interpolate(c1, rng.gen::<f64>().powf(2.0))
-    } else {
-        Color::black()
-    }
-}
-
 fn main() -> std::io::Result<()> {
     let args = args().collect::<Vec<_>>();
     eprintln!("executing {}", args[0]);
@@ -49,32 +38,36 @@ fn main() -> std::io::Result<()> {
     let t_frame = 0.040; // s
     let delay = Duration::new(0, (1_000_000_000.0 * t_frame) as u32);
 
-    let c0 = Color::new(0, 138, 170);
-    let c1 = Color::new(0, 160, 95);
-
     let mut rng = thread_rng();
 
-    let mut frame = repeat_with(|| {
-        repeat_with(|| pick_color(c0, c1, &mut rng))
-            .take(x_size)
-            .collect::<Vec<_>>()
-    })
-    .take(y_size)
-    .collect::<Vec<_>>();
+    let colors = vec![
+        Color::black(),
+        Color::red(),
+        Color::green(),
+        Color::blue(),
+        Color::yellow(),
+        Color::cyan(),
+        Color::magenta(),
+        Color::white(),
+    ];
+    let mut frame = repeat(repeat(Color::black()).take(x_size).collect::<Vec<_>>())
+        .take(y_size)
+        .collect::<Vec<_>>();
     loop {
-        if rng.gen::<f64>() < 0.01 {
+        if rng.gen::<f64>() < 0.02 {
             let x = rng.gen_range(0, x_size / 8);
             let y = rng.gen_range(0, y_size / 8);
-            let color = pick_color(c0, c1, &mut rng);
+            let fg = colors[rng.gen_range(0, colors.len())];
+            let bg = colors[rng.gen_range(0, colors.len())];
             let start_index = rng.gen_range(0, buffer.len() / 8) * 8;
             for i in 0..8 {
                 let b = buffer[start_index + i];
                 for j in 0..8 {
-                    frame[y * 8 + i][x * 8 + j] = {
+                    frame[y * 8 + 7 - i][x * 8 + j] = {
                         if b & (1 << j) != 0 {
-                            color
+                            fg
                         } else {
-                            Color::black()
+                            bg
                         }
                     };
                 }
