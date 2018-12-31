@@ -1,5 +1,8 @@
 cnoise - colored noise, sets random pixels in selected colors
-    paramater is not used yet
+    parameter is not used yet
+
+chars - display characters randomly
+    parameter is not used yet
 
 bimood - color cycling mood lamp with two complementary colors
     parameter is the seconds for one cycle through the colors
