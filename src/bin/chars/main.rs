@@ -66,8 +66,8 @@ fn main() -> std::io::Result<()> {
         let y = rng.gen_range(0, y_size / 8);
         let color = pick_color(c0, c1, &mut rng);
         let start_index = rng.gen_range(0, buffer.len() / 8) * 8;
-        for i in start_index..(start_index + 8) {
-            let b = buffer[i];
+        for i in 0..8 {
+            let b = buffer[start_index + i];
             for j in 0..8 {
                 frame[y * 8 + i][x * 8 + j] = {
                     if b & (1 << j) != 0 {
