@@ -23,6 +23,21 @@ fn send<T: Write>(w: &mut T, f: &Frame) -> std::io::Result<()> {
     w.flush()
 }
 
+fn paint_char(frame: &mut Frame, x: usize, y: usize, bitmap: &[u8], fg: Color, bg: Color) {
+    for i in 0..8 {
+        let b = bitmap[i];
+        for j in 0..8 {
+            frame[y * 8 + 7 - i][x * 8 + j] = {
+                if b & (1 << j) != 0 {
+                    fg
+                } else {
+                    bg
+                }
+            };
+        }
+    }
+}
+
 fn main() -> std::io::Result<()> {
     let args = args().collect::<Vec<_>>();
     eprintln!("executing {}", args[0]);
@@ -53,6 +68,15 @@ fn main() -> std::io::Result<()> {
     let mut frame = repeat(repeat(Color::black()).take(x_size).collect::<Vec<_>>())
         .take(y_size)
         .collect::<Vec<_>>();
+    for x in 0..(x_size / 8) {
+        for y in 0..(y_size / 8) {
+            let fg = colors[rng.gen_range(0, colors.len())];
+            let bg = colors[rng.gen_range(0, colors.len())];
+            let start_index = rng.gen_range(0, buffer.len() / 8) * 8;
+            let bitmap = &buffer[start_index..(start_index + 8)];
+            paint_char(&mut frame, x, y, bitmap, fg, bg);
+        }
+    }
     loop {
         if rng.gen::<f64>() < 0.02 {
             let x = rng.gen_range(0, x_size / 8);
@@ -60,18 +84,8 @@ fn main() -> std::io::Result<()> {
             let fg = colors[rng.gen_range(0, colors.len())];
             let bg = colors[rng.gen_range(0, colors.len())];
             let start_index = rng.gen_range(0, buffer.len() / 8) * 8;
-            for i in 0..8 {
-                let b = buffer[start_index + i];
-                for j in 0..8 {
-                    frame[y * 8 + 7 - i][x * 8 + j] = {
-                        if b & (1 << j) != 0 {
-                            fg
-                        } else {
-                            bg
-                        }
-                    };
-                }
-            }
+            let bitmap = &buffer[start_index..(start_index + 8)];
+            paint_char(&mut frame, x, y, bitmap, fg, bg);
         }
 
         let mut buf = Vec::with_capacity(x_size * y_size * 3);
