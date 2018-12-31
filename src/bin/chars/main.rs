@@ -69,7 +69,7 @@ fn main() -> std::io::Result<()> {
         for i in start_index..(start_index + 8) {
             let b = buffer[i];
             for j in 0..8 {
-                frame[y][x] = {
+                frame[y * 8 + i][x * 8 + j] = {
                     if b & (1 << j) != 0 {
                         color
                     } else {
