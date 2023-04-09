@@ -1,9 +1,10 @@
 [package]
 name = "pixelfoo"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["juergen <juergen@chaospott.de>"]
 edition = "2018"
 
 [dependencies]
-rand = "0.6.0"
+rand = "0.8.4"
 chrono = "0.4.6"
+lowdim = { version = "0.6.0", features = ["random"] }

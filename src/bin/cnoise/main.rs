@@ -56,8 +56,8 @@ fn main() -> std::io::Result<()> {
     .take(y_size)
     .collect::<Vec<_>>();
     loop {
-        let x = rng.gen_range(0, x_size);
-        let y = rng.gen_range(0, y_size);
+        let x = rng.gen_range(0..x_size);
+        let y = rng.gen_range(0..y_size);
         let c = pick_color(c0, c1, &mut rng);
         frame[y][x] = c;
 

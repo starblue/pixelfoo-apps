@@ -12,11 +12,16 @@ use chrono::Timelike;
 use rand::thread_rng;
 use rand::Rng;
 
+use lowdim::bb2d;
+use lowdim::p2d;
+use lowdim::v2d;
+use lowdim::Array2d;
+use lowdim::BBox2d;
+use lowdim::Point2d;
+use lowdim::Vec2d;
+use lowdim::Vector;
+
 use pixelfoo::color::Color;
-use pixelfoo::point2d::p2d;
-use pixelfoo::point2d::Point2d;
-use pixelfoo::vec2d::v2d;
-use pixelfoo::vec2d::Vec2d;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Square {
@@ -37,17 +42,24 @@ impl Square {
     }
 }
 
-struct Board(Vec<Vec<Square>>);
+#[derive(Clone, Debug)]
+struct Board(Array2d<i64, Square>);
+impl Board {
+    fn bbox(&self) -> BBox2d {
+        self.0.bbox()
+    }
+}
 
 fn send<T: Write>(w: &mut T, board: &Board) -> std::io::Result<()> {
-    for line in &board.0 {
-        for square in line {
+    for y in board.bbox().y_range() {
+        for x in board.bbox().x_range() {
+            let square = board.0[p2d(x, y)];
             let c = match square {
                 Square::Unused => Color::black(),
                 Square::Unknown { prio } => {
-                    if *prio == 0 {
+                    if prio == 0 {
                         Color::black()
-                    } else if *prio > 0 {
+                    } else if prio > 0 {
                         Color::lightblue()
                     } else {
                         Color::darkyellow()
@@ -71,35 +83,32 @@ enum Orientation {
 }
 
 impl Board {
-    fn new(board_size: Vec2d, maze_size: Vec2d) -> Board {
-        Board(
-            (0..board_size.y)
-                .map(move |y| {
-                    (0..board_size.x)
-                        .map(|x| {
-                            if x < maze_size.x && y < maze_size.y {
-                                if x == 0 || x == maze_size.x - 1 || y == 0 || y == maze_size.y - 1
-                                {
-                                    Square::Wall
-                                } else if x % 2 != 0 && y % 2 != 0 {
-                                    Square::Corridor
-                                } else {
-                                    Square::Unknown { prio: 0 }
-                                }
-                            } else {
-                                Square::Unused
-                            }
-                        })
-                        .collect::<Vec<_>>()
-                })
-                .collect::<Vec<_>>(),
-        )
+    fn new(board_bbox: BBox2d, maze_bbox: BBox2d) -> Board {
+        Board(Array2d::with(board_bbox, |p| {
+            if maze_bbox.contains(&p) {
+                let x = p.x();
+                let y = p.y();
+                if x == maze_bbox.x_min()
+                    || x == maze_bbox.x_max()
+                    || y == maze_bbox.y_min()
+                    || y == maze_bbox.y_max()
+                {
+                    Square::Wall
+                } else if x % 2 != 0 && y % 2 != 0 {
+                    Square::Corridor
+                } else {
+                    Square::Unknown { prio: 0 }
+                }
+            } else {
+                Square::Unused
+            }
+        }))
     }
     fn get(&self, pos: Point2d) -> Square {
-        self.0[pos.y as usize][pos.x as usize]
+        self.0[pos]
     }
     fn set(&mut self, pos: Point2d, sq: Square) {
-        self.0[pos.y as usize][pos.x as usize] = sq;
+        self.0[pos] = sq;
     }
 
     fn set_orientation(&mut self, desired: Orientation, pos: Point2d) {
@@ -107,14 +116,14 @@ impl Board {
         match sq {
             Square::Unknown { .. } => {
                 let prio;
-                if pos.x % 2 == 0 && pos.y % 2 != 0 {
+                if pos.x() % 2 == 0 && pos.y() % 2 != 0 {
                     // horizontal corridor, vertical wall
                     prio = if desired == Orientation::Vertical {
                         10
                     } else {
                         -10
                     };
-                } else if pos.x % 2 != 0 && pos.y % 2 == 0 {
+                } else if pos.x() % 2 != 0 && pos.y() % 2 == 0 {
                     // vertical corridor, horizontal wall
                     prio = if desired == Orientation::Horizontal {
                         10
@@ -137,28 +146,28 @@ impl Board {
         self.set_orientation(Orientation::Vertical, pos);
     }
     fn draw_horizontal_segment(&mut self, pos: Point2d, size: Vec2d) {
-        for x in 0..size.x {
-            let xn = size.x - 1 - x;
+        for x in 0..size.x() {
+            let xn = size.x() - 1 - x;
             self.set_horizontal(pos + v2d(x, 0));
-            for y in 1..x.min(xn).min(size.y / 2) + 1 {
+            for y in 1..x.min(xn).min(size.y() / 2) + 1 {
                 self.set_horizontal(pos + v2d(x, y));
                 self.set_horizontal(pos + v2d(x, -y));
             }
         }
     }
     fn draw_vertical_segment(&mut self, pos: Point2d, size: Vec2d) {
-        for y in 0..size.y {
-            let yn = size.y - 1 - y;
+        for y in 0..size.y() {
+            let yn = size.y() - 1 - y;
             self.set_vertical(pos + v2d(0, y));
-            for x in 1..y.min(yn).min(size.x / 2) + 1 {
+            for x in 1..y.min(yn).min(size.x() / 2) + 1 {
                 self.set_vertical(pos + v2d(x, y));
                 self.set_vertical(pos + v2d(-x, y));
             }
         }
     }
     fn draw_7_segments(&mut self, pos: Point2d, size: Vec2d, segments: u8) {
-        let length = size.x;
-        let width = size.y;
+        let length = size.x();
+        let width = size.y();
         let delta = length + 1;
         let hsize = v2d(length, width);
         let vsize = v2d(width, length);
@@ -226,7 +235,7 @@ where
         open.push(Move {
             from,
             dir,
-            prio: prio * 100 + rng.gen_range(0, 1000),
+            prio: prio * 100 + rng.gen_range(0..1000),
         });
     }
 }
@@ -237,8 +246,8 @@ fn main() -> std::io::Result<()> {
     let args = args().collect::<Vec<_>>();
     eprintln!("executing {}", args[0]);
 
-    let x_size = args[1].parse::<usize>().unwrap();
-    let y_size = args[2].parse::<usize>().unwrap();
+    let x_size = args[1].parse::<i64>().unwrap();
+    let y_size = args[2].parse::<i64>().unwrap();
     let arg = args[3].parse::<isize>().unwrap_or(DEFAULT_ARG);
     eprintln!("screen size {}x{}, arg {}", x_size, y_size, arg);
 
@@ -247,14 +256,11 @@ fn main() -> std::io::Result<()> {
     let t_frame = 0.040; // s
     let delay = Duration::new(0, (1_000_000_000.0 * t_frame) as u32);
 
-    let board_size = v2d(x_size as i32, y_size as i32);
+    let board_bbox = bb2d(0..x_size, 0..y_size);
     // round down to odd size for maze
-    let maze_size = v2d(
-        (board_size.x - 1) / 2 * 2 + 1,
-        (board_size.y - 1) / 2 * 2 + 1,
-    );
+    let maze_bbox = bb2d(0..(x_size - 1) / 2 * 2 + 1, 0..(y_size - 1) / 2 * 2 + 1);
 
-    let mut board = Board(Vec::new());
+    let mut board = Board::new(board_bbox, maze_bbox);
     let mut open = BinaryHeap::new();
     let mut last_drawn_minute = 99;
     loop {
@@ -267,7 +273,7 @@ fn main() -> std::io::Result<()> {
             if m != last_drawn_minute {
                 last_drawn_minute = m;
 
-                board = Board::new(board_size, maze_size);
+                board = Board::new(board_bbox, maze_bbox);
 
                 // draw time in prios
                 let segment_size = v2d(11, 5);
@@ -277,23 +283,35 @@ fn main() -> std::io::Result<()> {
                 board.draw_digit(p2d(59, 7), segment_size, (m % 10) as u8);
 
                 // start building walls from the border
-                for x in (2..(maze_size.x - 2)).step_by(2) {
-                    add_move(&board, &mut open, &mut rng, p2d(x, 0), v2d(0, 1));
+                for x in (2..(maze_bbox.x_max() - 1)).step_by(2) {
                     add_move(
                         &board,
                         &mut open,
                         &mut rng,
-                        p2d(x, maze_size.y - 1),
+                        p2d(x, maze_bbox.y_min()),
+                        v2d(0, 1),
+                    );
+                    add_move(
+                        &board,
+                        &mut open,
+                        &mut rng,
+                        p2d(x, maze_bbox.y_max()),
                         v2d(0, -1),
                     );
                 }
-                for y in (2..(maze_size.y - 2)).step_by(2) {
-                    add_move(&board, &mut open, &mut rng, p2d(0, y), v2d(1, 0));
+                for y in (2..(maze_bbox.y_max() - 1)).step_by(2) {
                     add_move(
                         &board,
                         &mut open,
                         &mut rng,
-                        p2d(maze_size.x - 1, y),
+                        p2d(maze_bbox.x_min(), y),
+                        v2d(1, 0),
+                    );
+                    add_move(
+                        &board,
+                        &mut open,
+                        &mut rng,
+                        p2d(maze_bbox.x_max(), y),
                         v2d(-1, 0),
                     );
                 }
@@ -316,7 +334,7 @@ fn main() -> std::io::Result<()> {
                 board.set(p1, Square::Wall);
                 board.set(p2, Square::Wall);
 
-                for dir1 in Vec2d::directions() {
+                for dir1 in Vec2d::unit_vecs_l1() {
                     let p3 = p2 + dir1;
                     let p4 = p3 + dir1;
                     if board.get(p3).is_unknown() {
@@ -332,12 +350,12 @@ fn main() -> std::io::Result<()> {
             }
 
             if open.is_empty() {
-                board.set(p2d(1, 1), Square::Start);
-                board.set(p2d(maze_size.x - 2, maze_size.y - 2), Square::Finish);
+                board.set(maze_bbox.min() + v2d(1, 1), Square::Start);
+                board.set(maze_bbox.max() - v2d(1, 1), Square::Finish);
             }
         }
 
-        let mut buf = Vec::with_capacity((board_size.x * board_size.y * 3) as usize);
+        let mut buf = Vec::with_capacity(board_bbox.area() * 3);
         send(&mut buf, &board)?;
         stdout().write_all(&buf)?;
         stdout().flush()?;
