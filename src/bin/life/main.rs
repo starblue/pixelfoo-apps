@@ -60,7 +60,7 @@ fn send<T: Write>(w: &mut T, board: &Board) -> std::io::Result<()> {
     w.flush()
 }
 
-const DEFAULT_ARG: usize = 10;
+const DEFAULT_ARG: u64 = 2;
 
 fn main() -> std::io::Result<()> {
     let args = args().collect::<Vec<_>>();
@@ -68,7 +68,7 @@ fn main() -> std::io::Result<()> {
 
     let x_size = args[1].parse::<usize>().unwrap();
     let y_size = args[2].parse::<usize>().unwrap();
-    let arg = args[3].parse::<usize>().unwrap_or(DEFAULT_ARG);
+    let arg = args[3].parse::<u64>().unwrap_or(DEFAULT_ARG);
     eprintln!("screen size {}x{}, arg {}", x_size, y_size, arg);
 
     let mut rng = thread_rng();
@@ -87,8 +87,8 @@ fn main() -> std::io::Result<()> {
         }
     });
 
-    let t_frame = 0.5; // s
-    let delay = Duration::from_secs_f64(t_frame);
+    let t_frame = (1000 / arg).max(50); // s
+    let delay = Duration::from_millis(t_frame);
 
     loop {
         let new_board = Board::with(bbox, |p| {
