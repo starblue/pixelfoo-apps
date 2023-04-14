@@ -18,8 +18,8 @@ use pixelfoo::color::Color;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Square {
-    Empty,
-    Full,
+    Dead,
+    Alive,
 }
 
 #[derive(Clone, Debug)]
@@ -51,8 +51,8 @@ fn send<T: Write>(w: &mut T, board: &Board) -> std::io::Result<()> {
         for x in board.bbox().x_range() {
             let square = board.map[p2d(x, y)];
             let c = match square {
-                Square::Empty => Color::black(),
-                Square::Full => Color::green(),
+                Square::Dead => Color::black(),
+                Square::Alive => Color::green(),
             };
             w.write_all(&c.rgb())?;
         }
@@ -74,14 +74,16 @@ fn main() -> std::io::Result<()> {
     let mut rng = thread_rng();
     let bbox = bb2d(0..x_size as i64, 0..y_size as i64);
 
-    let p_full = 0.25;
+    let p_alive_init = 0.125;
+    let p_alive_edge = 0.25;
+
     let mut board = Board::with(bbox, |_p| {
         // Initialize board randomly.
         let r = rng.gen::<f64>();
-        if r < p_full {
-            Square::Full
+        if r < p_alive_init {
+            Square::Alive
         } else {
-            Square::Empty
+            Square::Dead
         }
     });
 
@@ -94,25 +96,25 @@ fn main() -> std::io::Result<()> {
                 // Use the game of life rule in the interior.
                 let nc = p
                     .neighbors_l_infty()
-                    .filter(|&np| board.get(np) == Square::Full)
+                    .filter(|&np| board.get(np) == Square::Alive)
                     .count();
-                if nc == 3 || (nc == 2 && board.get(p) == Square::Full) {
-                    Square::Full
+                if nc == 3 || (nc == 2 && board.get(p) == Square::Alive) {
+                    Square::Alive
                 } else {
-                    Square::Empty
+                    Square::Dead
                 }
             } else {
                 if p.y() < bbox.y_min() || p.y() > bbox.y_max() {
                     // The invisible long edge is filled randomly.
                     let r = rng.gen::<f64>();
-                    if r < p_full {
-                        Square::Full
+                    if r < p_alive_edge {
+                        Square::Alive
                     } else {
-                        Square::Empty
+                        Square::Dead
                     }
                 } else {
                     // The short edges are empty.
-                    Square::Empty
+                    Square::Dead
                 }
             }
         });
