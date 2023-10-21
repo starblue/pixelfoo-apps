@@ -44,10 +44,12 @@ fn main() -> std::io::Result<()> {
     let x0 = (x_size as f64) / 2.0;
     let y0 = (y_size as f64) / 2.0;
 
+    // x = [-20.0,20.0], z = [0.0,50.0]
+
     let xc = 0.0;
-    let zc = 26.0;
-    let x_scale = 2.0;
-    let z_scale = 1.0;
+    let zc = 25.0;
+    let x_scale = x0 / 20.0;
+    let z_scale = y0 / 25.0;
 
     let dt = 0.005;
     let a = 10.0;
@@ -59,8 +61,6 @@ fn main() -> std::io::Result<()> {
     let mut z = zc;
 
     loop {
-        //eprintln!("{:10.3} {:10.3} {:10.3}", x, y, z);
-
         // Decay towards the background color.
         for row in &mut frame {
             for pixel in row {
