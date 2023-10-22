@@ -18,7 +18,7 @@ fn send<T: Write>(w: &mut T, f: &Frame) -> std::io::Result<()> {
     w.flush()
 }
 
-const DEFAULT_ARG: usize = 10;
+const DEFAULT_ARG: usize = 20;
 fn main() -> std::io::Result<()> {
     let args = args().collect::<Vec<_>>();
     eprintln!("executing {}", args[0]);
@@ -44,14 +44,14 @@ fn main() -> std::io::Result<()> {
     let x0 = (x_size as f64) / 2.0;
     let y0 = (y_size as f64) / 2.0;
 
-    // x = [-20.0,20.0], z = [0.0,50.0]
+    // x in [-20.0,20.0], z in [0.0,50.0]
 
     let xc = 0.0;
     let zc = 25.0;
     let x_scale = x0 / 20.0;
     let z_scale = y0 / 25.0;
 
-    let dt = 0.005;
+    let dt = 0.0025;
     let a = 10.0;
     let b = 27.0;
     let c = 8.0 / 3.0;
