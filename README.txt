@@ -16,6 +16,15 @@ maze - draws a maze by drawing corridors
 dualmaze - draws a maze by drawing walls
     parameter is number of actions per 40ms frame
 
+life - game of life
+    parameter is number of actions per second
+
+matrix-code - the falling code animation from Matrix
+    parameter is not used yet
+
+lorenz - a Lorenz attractor
+    parameter is number of actions per 40ms frame
+
 Compile with "cargo build --release".
 
 The binary executables are in the "target/release" subdirectory.
