@@ -5,7 +5,6 @@ use std::iter::repeat_with;
 use std::thread::sleep;
 use std::time::Duration;
 
-use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rand::Rng;
 
@@ -23,19 +22,21 @@ fn send<T: Write>(w: &mut T, f: &Frame) -> std::io::Result<()> {
 }
 
 #[derive(Clone, Debug)]
-struct Palette(Vec<(Color, Color)>);
+struct Palette(Vec<(f64, Color, Color)>);
 impl Palette {
-    fn pick<R>(&self, rng: &mut R, p: f64) -> Color
+    fn pick<R>(&self, rng: &mut R) -> Color
     where
         R: Rng,
     {
-        let &(c0, c1) = self.0.choose(rng).unwrap();
-
-        if rng.gen::<f64>() < p {
-            c0.interpolate(c1, rng.gen::<f64>().powf(2.0))
-        } else {
-            Color::black()
+        let r = rng.gen::<f64>();
+        let mut p_sum = 0.0;
+        for &(p, c0, c1) in &self.0 {
+            p_sum += p;
+            if r < p_sum {
+                return c0.interpolate(c1, rng.gen::<f64>().powf(2.0));
+            }
         }
+        Color::black()
     }
 }
 
@@ -55,23 +56,29 @@ fn main() -> std::io::Result<()> {
 
     let mut rng = thread_rng();
 
-    let palette_35 = Palette(vec![(Color::new(0, 138, 170), Color::new(0, 160, 95))]);
+    let palette_35 = Palette(vec![(0.3, Color::new(0, 138, 170), Color::new(0, 160, 95))]);
+    let palette_36 = Palette(vec![
+        (0.1, Color::new(208, 208, 206), Color::new(208, 208, 206)),
+        (0.05, Color::new(254, 80, 0), Color::new(254, 80, 0)),
+        (0.05, Color::new(0, 187, 49), Color::new(0, 187, 49)),
+    ]);
     let palette_37 = Palette(vec![
-        (Color::new(153, 0, 0), Color::new(255, 0, 0)),
-        (Color::new(0, 153, 0), Color::new(0, 255, 0)),
-        (Color::new(0, 0, 153), Color::new(0, 0, 255)),
-        (Color::new(153, 153, 0), Color::new(255, 255, 0)),
-        (Color::new(0, 153, 153), Color::new(0, 255, 255)),
-        (Color::new(153, 0, 153), Color::new(255, 0, 255)),
+        (0.05, Color::new(255, 0, 0), Color::new(255, 0, 0)),
+        (0.05, Color::new(0, 255, 0), Color::new(0, 255, 0)),
+        (0.05, Color::new(0, 0, 255), Color::new(0, 0, 255)),
+        (0.02, Color::new(255, 255, 0), Color::new(255, 255, 0)),
+        (0.02, Color::new(0, 255, 255), Color::new(0, 255, 255)),
+        (0.02, Color::new(255, 0, 255), Color::new(255, 0, 255)),
     ]);
 
     let palette = match arg {
         35 => palette_35,
+        36 => palette_36,
         _ => palette_37,
     };
 
     let mut frame = repeat_with(|| {
-        repeat_with(|| palette.pick(&mut rng, 0.5))
+        repeat_with(|| palette.pick(&mut rng))
             .take(x_size)
             .collect::<Vec<_>>()
     })
@@ -80,7 +87,7 @@ fn main() -> std::io::Result<()> {
     loop {
         let x = rng.gen_range(0..x_size);
         let y = rng.gen_range(0..y_size);
-        let c = palette.pick(&mut rng, 0.5);
+        let c = palette.pick(&mut rng);
         frame[y][x] = c;
 
         let mut buf = Vec::with_capacity(x_size * y_size * 3);
