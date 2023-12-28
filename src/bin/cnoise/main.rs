@@ -57,10 +57,10 @@ fn main() -> std::io::Result<()> {
     let mut rng = thread_rng();
 
     let palette_34 = Palette(vec![
-        (0.05, Color::new(101, 101, 101), Color::new(101, 101, 101)),
-        (0.05, Color::new(193, 193, 193), Color::new(193, 193, 193)),
-        (0.05, Color::new(165, 36, 49), Color::new(165, 36, 49)),
-        (0.05, Color::new(246, 151, 16), Color::new(246, 151, 16)),
+        (0.07, Color::new(101, 101, 101), Color::new(101, 101, 101)),
+        (0.07, Color::new(193, 193, 193), Color::new(193, 193, 193)),
+        (0.07, Color::new(165, 36, 49), Color::new(165, 36, 49)),
+        (0.07, Color::new(246, 151, 16), Color::new(246, 151, 16)),
     ]);
     let palette_35 = Palette(vec![(0.3, Color::new(0, 138, 170), Color::new(0, 160, 95))]);
     let palette_36 = Palette(vec![
