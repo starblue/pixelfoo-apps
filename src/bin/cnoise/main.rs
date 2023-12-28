@@ -56,28 +56,45 @@ fn main() -> std::io::Result<()> {
 
     let mut rng = thread_rng();
 
+    let palette_32 = Palette(vec![
+        (0.06, Color::new(19, 4, 27), Color::new(19, 4, 27)),
+        (0.06, Color::new(87, 23, 72), Color::new(87, 23, 72)),
+        (0.06, Color::new(230, 32, 4), Color::new(230, 32, 4)),
+        (0.06, Color::new(24, 0, 247), Color::new(24, 0, 247)),
+        (0.06, Color::new(214, 121, 151), Color::new(214, 123, 151)),
+    ]);
+    let palette_33 = Palette(vec![
+        (0.03, Color::new(0, 154, 147), Color::new(0, 154, 147)),
+        (0.03, Color::new(117, 81, 156), Color::new(117, 81, 156)),
+        (0.03, Color::new(255, 243, 116), Color::new(255, 243, 116)),
+        (0.03, Color::new(236, 96, 144), Color::new(236, 96, 144)),
+        (0.03, Color::new(0, 123, 196), Color::new(0, 123, 196)),
+        (0.03, Color::new(162, 198, 23), Color::new(162, 198, 23)),
+        (0.03, Color::new(231, 52, 76), Color::new(231, 52, 76)),
+    ]);
     let palette_34 = Palette(vec![
-        (0.07, Color::new(101, 101, 101), Color::new(101, 101, 101)),
         (0.07, Color::new(193, 193, 193), Color::new(193, 193, 193)),
         (0.07, Color::new(165, 36, 49), Color::new(165, 36, 49)),
         (0.07, Color::new(246, 151, 16), Color::new(246, 151, 16)),
     ]);
-    let palette_35 = Palette(vec![(0.3, Color::new(0, 138, 170), Color::new(0, 160, 95))]);
+    let palette_35 = Palette(vec![(0.4, Color::new(0, 132, 176), Color::new(0, 163, 86))]);
     let palette_36 = Palette(vec![
         (0.1, Color::new(208, 208, 206), Color::new(208, 208, 206)),
         (0.05, Color::new(254, 80, 0), Color::new(254, 80, 0)),
         (0.05, Color::new(0, 187, 49), Color::new(0, 187, 49)),
     ]);
     let palette_37 = Palette(vec![
-        (0.05, Color::new(255, 0, 0), Color::new(255, 0, 0)),
-        (0.05, Color::new(0, 255, 0), Color::new(0, 255, 0)),
-        (0.05, Color::new(0, 0, 255), Color::new(0, 0, 255)),
-        (0.02, Color::new(255, 255, 0), Color::new(255, 255, 0)),
-        (0.02, Color::new(0, 255, 255), Color::new(0, 255, 255)),
-        (0.02, Color::new(255, 0, 255), Color::new(255, 0, 255)),
+        (0.03, Color::new(255, 0, 0), Color::new(255, 0, 0)),
+        (0.03, Color::new(0, 255, 0), Color::new(0, 255, 0)),
+        (0.03, Color::new(0, 0, 255), Color::new(0, 0, 255)),
+        (0.03, Color::new(255, 255, 0), Color::new(255, 255, 0)),
+        (0.03, Color::new(0, 255, 255), Color::new(0, 255, 255)),
+        (0.03, Color::new(255, 0, 255), Color::new(255, 0, 255)),
     ]);
 
     let palette = match arg {
+        32 => palette_32,
+        33 => palette_33,
         34 => palette_34,
         35 => palette_35,
         36 => palette_36,
