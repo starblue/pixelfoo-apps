@@ -56,6 +56,13 @@ fn main() -> std::io::Result<()> {
 
     let mut rng = thread_rng();
 
+    let palette_31 = Palette(vec![
+        (0.06, Color::new(255, 90, 70), Color::new(255, 90, 70)),
+        (0.06, Color::new(255, 130, 50), Color::new(255, 130, 50)),
+        (0.06, Color::new(255, 160, 0), Color::new(255, 160, 0)),
+        (0.06, Color::new(110, 80, 180), Color::new(110, 80, 180)),
+        (0.06, Color::new(65, 20, 90), Color::new(65, 20, 90)),
+    ]);
     let palette_32 = Palette(vec![
         (0.06, Color::new(19, 4, 27), Color::new(19, 4, 27)),
         (0.06, Color::new(87, 23, 72), Color::new(87, 23, 72)),
@@ -93,6 +100,7 @@ fn main() -> std::io::Result<()> {
     ]);
 
     let palette = match arg {
+        31 => palette_31,
         32 => palette_32,
         33 => palette_33,
         34 => palette_34,
