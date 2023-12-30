@@ -62,7 +62,6 @@ fn main() -> std::io::Result<()> {
         (0.04, Color::new(0, 178, 107), Color::new(0, 178, 107)),
         (0.04, Color::new(247, 148, 51), Color::new(247, 148, 51)),
         (0.04, Color::new(109, 104, 175), Color::new(109, 104, 175)),
-        (0.02, Color::new(255, 255, 255), Color::new(255, 255, 255)),
     ]);
     let palette_30 = Palette(vec![
         (0.01, Color::new(0, 76, 85), Color::new(0, 76, 85)),
