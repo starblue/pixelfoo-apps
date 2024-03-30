@@ -1,5 +1,5 @@
-cnoise - colored noise, sets random pixels in selected colors
-    parameter is not used yet
+cnoise - congress noise, sets random pixels in official congress colors
+    parameter is the number of the congress, latest by default
 
 chars - display characters randomly
     parameter is not used yet
