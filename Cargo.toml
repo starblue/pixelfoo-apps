@@ -2,7 +2,7 @@
 name = "pixelfoo"
 version = "0.2.0"
 authors = ["juergen <juergen@chaospott.de>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 rand = "0.8.4"
