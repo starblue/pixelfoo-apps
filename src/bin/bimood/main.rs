@@ -18,7 +18,7 @@ fn send<T: Write>(w: &mut T, f: &Frame) -> std::io::Result<()> {
     w.flush()
 }
 
-const DEFAULT_LOOP_TIME: usize = 120;
+const DEFAULT_ARG: usize = 120;
 const MIN_LOOP_TIME: usize = 20;
 
 fn main() -> std::io::Result<()> {
@@ -27,10 +27,12 @@ fn main() -> std::io::Result<()> {
 
     let x_size = args[1].parse::<usize>().unwrap();
     let y_size = args[2].parse::<usize>().unwrap();
-    let loop_time = args[3]
-        .parse::<usize>()
-        .unwrap_or(DEFAULT_LOOP_TIME)
-        .max(MIN_LOOP_TIME);
+    let arg = if let Some(s) = args.get(3) {
+        s.parse::<usize>().unwrap_or(DEFAULT_ARG)
+    } else {
+        DEFAULT_ARG
+    };
+    let loop_time = arg.max(MIN_LOOP_TIME);
     eprintln!(
         "screen size {}x{}, loop time {:?}s",
         x_size, y_size, loop_time

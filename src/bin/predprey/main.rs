@@ -76,7 +76,11 @@ fn main() -> std::io::Result<()> {
 
     let x_size = args[1].parse::<i64>().unwrap();
     let y_size = args[2].parse::<i64>().unwrap();
-    let arg = args[3].parse::<usize>().unwrap_or(DEFAULT_ARG);
+    let arg = if let Some(s) = args.get(3) {
+        s.parse::<usize>().unwrap_or(DEFAULT_ARG)
+    } else {
+        DEFAULT_ARG
+    };
     eprintln!("screen size {}x{}, arg {}", x_size, y_size, arg);
 
     let mut rng = thread_rng();
