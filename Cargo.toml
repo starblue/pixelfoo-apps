@@ -2,6 +2,12 @@
 name = "pixelfoo"
 version = "0.2.0"
 authors = ["juergen <juergen@chaospott.de>"]
+description = "Pixelfoo animation apps."
+homepage = "https://codeberg.org/poc/pixelfoo-apps.git"
+repository = "https://codeberg.org/poc/pixelfoo-spps.git"
+keywords = ["led", "led-matrix", "neopixel", "smart-leds", "graphics"]
+categories = ["graphics"]
+license = "MIT OR Apache-2.0"
 edition = "2021"
 
 [dependencies]
