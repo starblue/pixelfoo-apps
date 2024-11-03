@@ -14,3 +14,4 @@ edition = "2021"
 rand = "0.8.4"
 chrono = "0.4.6"
 lowdim = { version = "0.6.0", features = ["random"] }
+primal = "0.3.3"
