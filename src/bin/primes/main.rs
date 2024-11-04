@@ -1,4 +1,5 @@
 use std::env::args;
+use std::fs;
 use std::io::stdout;
 use std::io::Write;
 use std::thread::sleep;
@@ -10,6 +11,9 @@ use lowdim::v2d;
 use lowdim::Array2d;
 use lowdim::BBox2d;
 use lowdim::Point2d;
+
+type Error = Box<dyn std::error::Error>;
+type Result<T> = std::result::Result<T, Error>;
 
 const COLORS: usize = 4;
 
@@ -38,7 +42,7 @@ impl Frame {
     }
 }
 
-fn send<T: Write>(w: &mut T, frame: &Frame) -> std::io::Result<()> {
+fn send<T: Write>(w: &mut T, frame: &Frame) -> Result<()> {
     for y in frame.bbox().y_range().rev() {
         for x in frame.bbox().x_range() {
             let pixel = frame.pixels[p2d(x, y)];
@@ -50,7 +54,7 @@ fn send<T: Write>(w: &mut T, frame: &Frame) -> std::io::Result<()> {
             w.write_all(rgbw)?;
         }
     }
-    w.flush()
+    Ok(w.flush()?)
 }
 
 fn encode_digit(d: u32) -> (i64, bool) {
@@ -138,7 +142,18 @@ fn render(frame: &mut Frame, pos: &mut Point2d, n: usize) {
 
 const DEFAULT_ARG: u64 = 4;
 
-fn main() -> std::io::Result<()> {
+const STATE_FILENAME: &str = ".primes.state";
+
+fn write_state(p: usize) {
+    let _ = fs::write(STATE_FILENAME, p.to_string());
+}
+
+fn read_state() -> Result<usize> {
+    let s = fs::read_to_string(STATE_FILENAME)?;
+    Ok(s.parse::<usize>()?)
+}
+
+fn main() -> Result<()> {
     let args = args().collect::<Vec<_>>();
     eprintln!("executing {}", args[0]);
 
@@ -151,6 +166,10 @@ fn main() -> std::io::Result<()> {
     };
     eprintln!("screen size {}x{}, arg {}", x_size, y_size, arg);
 
+    let last_prime = read_state().unwrap_or(1);
+    eprintln!("starting after {}", last_prime);
+    let mut primes_iter = primal::Primes::all().skip_while(|&p| p < last_prime);
+
     let bbox = bb2d(0..x_size as i64, 0..y_size as i64);
 
     let mut frame = Frame::new(bbox);
@@ -162,7 +181,6 @@ fn main() -> std::io::Result<()> {
     let y_mid = (bbox.y_min() + bbox.y_max()) / 2;
     let mut start_pos = p2d(bbox.x_end(), y_mid - 6);
 
-    let mut primes_iter = primal::Primes::all();
     let mut visible_primes = Vec::new();
 
     let space = v2d(2, 0);
@@ -193,6 +211,7 @@ fn main() -> std::io::Result<()> {
         // Fill up the visible primes when necessary.
         while pos.x() < frame.bbox().x_end() + STROKE_MID {
             let p = primes_iter.next().unwrap();
+            write_state(p);
             eprintln!("{}", p);
 
             // Keep the prime for displaying it the next time.
