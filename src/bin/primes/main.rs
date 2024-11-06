@@ -16,6 +16,7 @@ type Error = Box<dyn std::error::Error>;
 type Result<T> = std::result::Result<T, Error>;
 
 const COLORS: usize = 4;
+const WHITE_VALUE: u8 = 128;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Pixel {
@@ -47,7 +48,7 @@ fn send<T: Write>(w: &mut T, frame: &Frame) -> Result<()> {
         for x in frame.bbox().x_range() {
             let pixel = frame.pixels[p2d(x, y)];
             let white = match pixel {
-                Pixel::Background => 170,
+                Pixel::Background => WHITE_VALUE,
                 Pixel::Foreground => 0,
             };
             let rgbw: &[u8] = &[0, 0, 0, white];
