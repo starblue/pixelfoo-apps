@@ -88,6 +88,9 @@ fn render_zero(frame: &mut Frame, pos: &mut Point2d) {
 
 const STROKE_LEN: i64 = 11;
 const STROKE_MID: i64 = 5;
+const HEIGHT: i64 = 12;
+const MIN_LINE_SEP: i64 = 1;
+const MIN_MARGIN: i64 = 1;
 
 fn render_vertical(frame: &mut Frame, pos: &mut Point2d, digit: u32) {
     if digit == 0 {
@@ -141,7 +144,7 @@ fn render(frame: &mut Frame, pos: &mut Point2d, n: usize) {
     }
 }
 
-const DEFAULT_ARG: u64 = 4;
+const DEFAULT_ARG: u64 = 2;
 
 const STATE_FILENAME: &str = ".primes.state";
 
@@ -167,6 +170,11 @@ fn main() -> Result<()> {
     };
     eprintln!("screen size {}x{}, arg {}", x_size, y_size, arg);
 
+    let frame_size = x_size * y_size * COLORS;
+
+    let x_size = i64::try_from(x_size)?;
+    let y_size = i64::try_from(y_size)?;
+
     let last_prime = read_state().unwrap_or(1);
     eprintln!("starting after {}", last_prime);
     let mut primes_iter = primal::Primes::all().skip_while(|&p| p < last_prime);
@@ -178,56 +186,68 @@ fn main() -> Result<()> {
     let t_frame = (1000 / arg).max(50); // s
     let delay = Duration::from_millis(t_frame);
 
-    // Start position for rendering (lower left pixel).
-    let y_mid = (bbox.y_min() + bbox.y_max()) / 2;
-    let mut start_pos = p2d(bbox.x_end(), y_mid - 6);
+    // Start positions for rendering (lower left pixel).
+    let lines = (y_size - 2 * MIN_MARGIN + MIN_LINE_SEP) / (HEIGHT + MIN_LINE_SEP);
+    let line_sep = if lines >= 2 {
+        (y_size - 2 * MIN_MARGIN - lines * HEIGHT) / (lines - 1)
+    } else {
+        MIN_LINE_SEP
+    };
+    let y0 = MIN_MARGIN + (y_size - 2 * MIN_MARGIN - lines * HEIGHT - (lines - 1) * line_sep) / 2;
+    let mut start_positions = (0..lines)
+        .map(|i| p2d(bbox.x_end(), y0 + i * (line_sep + HEIGHT)))
+        .collect::<Vec<_>>();
 
-    let mut visible_primes = Vec::new();
+    let lines = usize::try_from(lines)?;
+
+    let mut visible_primes = (0..lines).map(|_| Vec::new()).collect::<Vec<_>>();
 
     let space = v2d(2, 0);
     loop {
         let mut new_frame = Frame::new(bbox);
-        let mut new_visible_primes = Vec::new();
+        let mut new_visible_primes = (0..lines).map(|_| Vec::new()).collect::<Vec<_>>();
 
-        let mut pos = start_pos;
+        for i in 0..lines {
+            let mut pos = start_positions[i];
 
-        // Render the primes that are already visible.
-        for p in visible_primes {
-            render(&mut new_frame, &mut pos, p);
-            if pos.x() + STROKE_MID < frame.bbox().x_start() {
-                // The prime is not visible any more,
-                // not even some overhang from a five bar.
-                // Omit it from the visible primes and move the start position
-                // to the start of the next number.
-                start_pos = pos + space;
-            } else {
-                // Keep the prime for displaying it the next time.
-                new_visible_primes.push(p);
+            // Render the primes that are already visible.
+            for &p in &visible_primes[i] {
+                render(&mut new_frame, &mut pos, p);
+                if pos.x() + STROKE_MID < frame.bbox().x_start() {
+                    // The prime is not visible any more,
+                    // not even some overhang from a five bar.
+                    // Omit it from the visible primes and move the start position
+                    // to the start of the next number.
+                    start_positions[i] = pos + space;
+                } else {
+                    // Keep the prime for displaying it the next time.
+                    new_visible_primes[i].push(p);
+                }
+
+                // Render a space between numbers.
+                pos += space;
             }
 
-            // Render a space between numbers.
-            pos += space;
+            // Fill up the visible primes when necessary.
+            while pos.x() < frame.bbox().x_end() + STROKE_MID {
+                let p = primes_iter.next().unwrap();
+                write_state(p);
+                eprintln!("{}", p);
+
+                // Keep the prime for displaying it the next time.
+                new_visible_primes[i].push(p);
+
+                render(&mut new_frame, &mut pos, p);
+            }
+
+            // Scroll one pixel to the left.
+            start_positions[i] -= v2d(1, 0);
         }
-
-        // Fill up the visible primes when necessary.
-        while pos.x() < frame.bbox().x_end() + STROKE_MID {
-            let p = primes_iter.next().unwrap();
-            write_state(p);
-            eprintln!("{}", p);
-
-            // Keep the prime for displaying it the next time.
-            new_visible_primes.push(p);
-
-            render(&mut new_frame, &mut pos, p);
-        }
-
-        // Scroll one pixel to the left.
-        start_pos -= v2d(1, 0);
 
         frame = new_frame;
         visible_primes = new_visible_primes;
 
-        let mut buf = Vec::with_capacity(x_size * y_size * COLORS);
+        let mut buf = Vec::with_capacity(frame_size);
         send(&mut buf, &frame)?;
         stdout().write_all(&buf)?;
         stdout().flush()?;
