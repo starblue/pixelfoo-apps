@@ -188,11 +188,13 @@ fn main() -> Result<()> {
 
     // Start positions for rendering (lower left pixel).
     let lines = (y_size - 2 * MIN_MARGIN + MIN_LINE_SEP) / (HEIGHT + MIN_LINE_SEP);
+    let lines = lines.max(1);
     let line_sep = if lines >= 2 {
-        (y_size - 2 * MIN_MARGIN - lines * HEIGHT) / (lines - 1)
+        (y_size - 2 * MIN_MARGIN - lines * HEIGHT) / lines
     } else {
         MIN_LINE_SEP
     };
+    let line_sep = line_sep.max(MIN_LINE_SEP);
     let y0 = MIN_MARGIN + (y_size - 2 * MIN_MARGIN - lines * HEIGHT - (lines - 1) * line_sep) / 2;
     let mut start_positions = (0..lines)
         .map(|i| p2d(bbox.x_end(), y0 + i * (line_sep + HEIGHT)))
