@@ -209,7 +209,7 @@ fn main() -> Result<()> {
         let mut new_frame = Frame::new(bbox);
         let mut new_visible_primes = (0..lines).map(|_| Vec::new()).collect::<Vec<_>>();
 
-        for i in 0..lines {
+        for i in (0..lines).rev() {
             let mut pos = start_positions[i];
 
             // Render the primes that are already visible.
