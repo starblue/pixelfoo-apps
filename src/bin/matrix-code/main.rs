@@ -21,7 +21,7 @@ use lowdim::Array2d;
 use lowdim::BBox2d;
 use lowdim::Point2d;
 
-use pixelfoo::color::Color;
+use pixelfoo_apps::color::Color;
 
 #[derive(Clone, Debug)]
 struct RunningState {

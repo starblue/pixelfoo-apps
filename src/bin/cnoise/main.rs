@@ -8,7 +8,7 @@ use std::time::Duration;
 use rand::thread_rng;
 use rand::Rng;
 
-use pixelfoo::color::Color;
+use pixelfoo_apps::color::Color;
 
 type Frame = Vec<Vec<Color>>;
 

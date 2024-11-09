@@ -21,7 +21,7 @@ use lowdim::Point2d;
 use lowdim::Vec2d;
 use lowdim::Vector;
 
-use pixelfoo::color::Color;
+use pixelfoo_apps::color::Color;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Square {

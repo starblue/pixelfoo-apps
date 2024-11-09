@@ -1,5 +1,5 @@
 [package]
-name = "pixelfoo"
+name = "pixelfoo-apps"
 version = "0.2.0"
 authors = ["juergen <juergen@chaospott.de>"]
 description = "Pixelfoo animation apps."

@@ -12,7 +12,7 @@ use lowdim::Array2d;
 use lowdim::BBox2d;
 use lowdim::Point2d;
 
-use pixelfoo::color::Color;
+use pixelfoo_apps::color::Color;
 
 type Error = Box<dyn std::error::Error>;
 type Result<T> = std::result::Result<T, Error>;

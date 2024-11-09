@@ -5,7 +5,7 @@ use std::iter::repeat;
 use std::thread::sleep;
 use std::time::Duration;
 
-use pixelfoo::color::Color;
+use pixelfoo_apps::color::Color;
 
 type Frame = Vec<Vec<Color>>;
 
