@@ -12,11 +12,12 @@ use lowdim::Array2d;
 use lowdim::BBox2d;
 use lowdim::Point2d;
 
+use pixelfoo::color::Color;
+
 type Error = Box<dyn std::error::Error>;
 type Result<T> = std::result::Result<T, Error>;
 
-const COLORS: usize = 4;
-const WHITE_VALUE: u8 = 128;
+const COLORS: usize = 3;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Pixel {
@@ -47,12 +48,11 @@ fn send<T: Write>(w: &mut T, frame: &Frame) -> Result<()> {
     for y in frame.bbox().y_range().rev() {
         for x in frame.bbox().x_range() {
             let pixel = frame.pixels[p2d(x, y)];
-            let white = match pixel {
-                Pixel::Background => WHITE_VALUE,
-                Pixel::Foreground => 0,
+            let color = match pixel {
+                Pixel::Background => Color::black(),
+                Pixel::Foreground => Color::new(0xcc, 0x99, 0),
             };
-            let rgbw: &[u8] = &[0, 0, 0, white];
-            w.write_all(rgbw)?;
+            w.write_all(&color.rgb())?;
         }
     }
     Ok(w.flush()?)
