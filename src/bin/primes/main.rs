@@ -88,7 +88,7 @@ fn render_zero(frame: &mut Frame, pos: &mut Point2d) {
 
 const STROKE_LEN: i64 = 11;
 const STROKE_MID: i64 = 5;
-const HEIGHT: i64 = 12;
+const HEIGHT: i64 = 11;
 const MIN_LINE_SEP: i64 = 1;
 const MIN_MARGIN: i64 = 1;
 
@@ -104,7 +104,10 @@ fn render_vertical(frame: &mut Frame, pos: &mut Point2d, digit: u32) {
         }
         if five {
             for j in 0..STROKE_LEN {
-                frame.set(*pos + v2d(ones - 1 - STROKE_MID + j, 11), Pixel::Foreground);
+                frame.set(
+                    *pos + v2d(ones - 1 - STROKE_MID + j, HEIGHT - 1),
+                    Pixel::Foreground,
+                );
             }
         }
         *pos += v2d(2 * ones - 1, 0);
