@@ -1,9 +1,14 @@
+use std::cmp;
+use std::collections::BinaryHeap;
 use std::env::args;
 use std::fs;
 use std::io::stdout;
 use std::io::Write;
 use std::thread::sleep;
 use std::time::Duration;
+
+use serde::Deserialize;
+use serde::Serialize;
 
 use lowdim::bb2d;
 use lowdim::p2d;
@@ -151,13 +156,52 @@ const DEFAULT_ARG: u64 = 2;
 
 const STATE_FILENAME: &str = ".primes.state";
 
-fn write_state(p: usize) {
-    let _ = fs::write(STATE_FILENAME, p.to_string());
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct State {
+    prime: usize,
+    xs: Vec<i64>,
+}
+impl State {
+    fn init(len: usize, x: i64) -> State {
+        State {
+            prime: 2,
+            xs: vec![x; len],
+        }
+    }
+    fn load(lines: usize) -> Result<State> {
+        let s = fs::read_to_string(STATE_FILENAME)?;
+        let state: State = serde_json::from_str(&s)?;
+        if state.xs.len() != lines {
+            return Err("number of lines don't match".into());
+        }
+        Ok(state)
+    }
+    fn save(&self) -> Result<()> {
+        let serialized = serde_json::to_string(self)?;
+        Ok(fs::write(STATE_FILENAME, serialized)?)
+    }
 }
 
-fn read_state() -> Result<usize> {
-    let s = fs::read_to_string(STATE_FILENAME)?;
-    Ok(s.parse::<usize>()?)
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct LinePos {
+    /// Index of the line.
+    index: usize,
+    /// Rendering position in this line.
+    pos: Point2d,
+}
+impl PartialOrd for LinePos {
+    fn partial_cmp(&self, other: &LinePos) -> Option<cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for LinePos {
+    fn cmp(&self, other: &Self) -> cmp::Ordering {
+        other
+            .pos
+            .x()
+            .cmp(&self.pos.x())
+            .then(self.index.cmp(&other.index))
+    }
 }
 
 fn main() -> Result<()> {
@@ -178,10 +222,6 @@ fn main() -> Result<()> {
     let x_size = i64::try_from(x_size)?;
     let y_size = i64::try_from(y_size)?;
 
-    let last_prime = read_state().unwrap_or(1);
-    eprintln!("starting after {}", last_prime);
-    let mut primes_iter = primal::Primes::all().skip_while(|&p| p < last_prime);
-
     let bbox = bb2d(0..x_size as i64, 0..y_size as i64);
 
     let mut frame = Frame::new(bbox);
@@ -198,59 +238,95 @@ fn main() -> Result<()> {
         MIN_LINE_SEP
     };
     let line_sep = line_sep.max(MIN_LINE_SEP);
+    let x0 = bbox.x_start() + MIN_MARGIN;
     let y0 = MIN_MARGIN + (y_size - 2 * MIN_MARGIN - lines * HEIGHT - (lines - 1) * line_sep) / 2;
-    let mut start_positions = (0..lines)
-        .map(|i| p2d(bbox.x_end(), y0 + i * (line_sep + HEIGHT)))
+    let line_count = usize::try_from(lines)?;
+
+    let start_state = State::load(line_count).unwrap_or_else(|_| State::init(line_count, x0));
+    eprintln!("starting at {}", start_state.prime);
+
+    let mut primes_iter = primal::Primes::all().skip_while(|&p| p < start_state.prime);
+
+    let mut start_positions = start_state
+        .xs
+        .iter()
+        .enumerate()
+        .map(|(i, &x)| p2d(x, y0 + (i as i64) * (line_sep + HEIGHT)))
         .collect::<Vec<_>>();
 
-    let lines = usize::try_from(lines)?;
-
-    let mut visible_primes = (0..lines).map(|_| Vec::new()).collect::<Vec<_>>();
+    let mut visible_primes = Vec::new();
 
     let space = v2d(2, 0);
     loop {
         let mut new_frame = Frame::new(bbox);
-        let mut new_visible_primes = (0..lines).map(|_| Vec::new()).collect::<Vec<_>>();
+        let mut new_visible_primes = Vec::new();
 
-        for i in (0..lines).rev() {
-            let mut pos = start_positions[i];
+        // Fill empty space from the left to the right over all lines.
+        let mut positions = start_positions
+            .iter()
+            .enumerate()
+            .map(|(i, &pos)| LinePos { index: i, pos })
+            .collect::<BinaryHeap<_>>();
+        // Render the primes that are already visible.
+        for p in visible_primes {
+            let line_pos = positions.pop().unwrap();
+            let i = line_pos.index;
+            let mut pos = line_pos.pos;
 
-            // Render the primes that are already visible.
-            for &p in &visible_primes[i] {
+            render(&mut new_frame, &mut pos, p);
+            if new_visible_primes.is_empty() && pos.x() + STROKE_MID < frame.bbox().x_start() {
+                // The prime is not visible any more,
+                // not even some overhang from a five bar.
+                // Omit it from the visible primes and move the start position
+                // to the start of the next number.
+                // Only do this if no previous prime was kept.
+                start_positions[i] = pos + space;
+            } else {
+                // Keep the prime for displaying it the next time.
+                new_visible_primes.push(p);
+            }
+
+            // Render a space between numbers.
+            pos += space;
+
+            // Save the new position for later handling.
+            positions.push(LinePos { index: i, pos });
+        }
+        while let Some(line_pos) = positions.pop() {
+            let i = line_pos.index;
+            let mut pos = line_pos.pos;
+
+            // Fill up the visible primes when necessary.
+            if pos.x() < frame.bbox().x_end() + STROKE_MID {
+                let p = primes_iter.next().unwrap();
+                eprintln!("{} {}", i, p);
+
+                // Keep the prime for displaying it the next time.
+                new_visible_primes.push(p);
+
                 render(&mut new_frame, &mut pos, p);
-                if pos.x() + STROKE_MID < frame.bbox().x_start() {
-                    // The prime is not visible any more,
-                    // not even some overhang from a five bar.
-                    // Omit it from the visible primes and move the start position
-                    // to the start of the next number.
-                    start_positions[i] = pos + space;
-                } else {
-                    // Keep the prime for displaying it the next time.
-                    new_visible_primes[i].push(p);
-                }
 
                 // Render a space between numbers.
                 pos += space;
+
+                positions.push(LinePos { index: i, pos });
             }
+        }
 
-            // Fill up the visible primes when necessary.
-            while pos.x() < frame.bbox().x_end() + STROKE_MID {
-                let p = primes_iter.next().unwrap();
-                write_state(p);
-                eprintln!("{}", p);
-
-                // Keep the prime for displaying it the next time.
-                new_visible_primes[i].push(p);
-
-                render(&mut new_frame, &mut pos, p);
-            }
-
-            // Scroll one pixel to the left.
-            start_positions[i] -= v2d(1, 0);
+        // Scroll one pixel to the left.
+        for pos in &mut start_positions {
+            *pos -= v2d(1, 0);
         }
 
         frame = new_frame;
         visible_primes = new_visible_primes;
+
+        // Save the state
+        let state = State {
+            prime: visible_primes[0],
+            xs: start_positions.iter().map(|p| p.x()).collect::<Vec<_>>(),
+        };
+        let _ = state.save();
 
         let mut buf = Vec::with_capacity(frame_size);
         send(&mut buf, &frame)?;
