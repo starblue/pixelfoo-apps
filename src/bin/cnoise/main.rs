@@ -40,7 +40,7 @@ impl Palette {
     }
 }
 
-const DEFAULT_ARG: usize = 37;
+const DEFAULT_ARG: usize = 38;
 
 fn main() -> std::io::Result<()> {
     let args = args().collect::<Vec<_>>();
@@ -123,6 +123,16 @@ fn main() -> std::io::Result<()> {
         (0.03, Color::new(0, 255, 255), Color::new(0, 255, 255)),
         (0.03, Color::new(255, 0, 255), Color::new(255, 0, 255)),
     ]);
+    let palette_38 = Palette(vec![
+        (0.08, Color::new(255, 80, 83), Color::new(255, 80, 83)),
+        (0.02, Color::new(254, 242, 255), Color::new(254, 242, 255)),
+        (0.02, Color::new(178, 170, 255), Color::new(178, 170, 255)),
+        (0.02, Color::new(106, 95, 219), Color::new(106, 95, 219)),
+        (0.02, Color::new(38, 26, 102), Color::new(38, 26, 102)),
+        (0.02, Color::new(41, 17, 76), Color::new(41, 17, 76)),
+        (0.02, Color::new(25, 11, 47), Color::new(25, 11, 47)),
+        (0.8, Color::new(15, 0, 10), Color::new(15, 0, 10)),
+    ]);
 
     let palette = match arg {
         29 => palette_29,
@@ -133,7 +143,8 @@ fn main() -> std::io::Result<()> {
         34 => palette_34,
         35 => palette_35,
         36 => palette_36,
-        _ => palette_37,
+        37 => palette_37,
+        _ => palette_38,
     };
 
     let mut frame = repeat_with(|| {
