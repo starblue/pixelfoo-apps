@@ -28,6 +28,9 @@ lorenz - a Lorenz attractor
 primes - display primes as rod numerals (hommage to Rune Mields)
     parameter is the number of pixels scrolled per second
 
+colorcode - Show a color coded resistor
+    parameter is not used yet
+
 Compile with "cargo build --release".
 
 The binary executables are in the "target/release" subdirectory.
