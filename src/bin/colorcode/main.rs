@@ -92,9 +92,9 @@ impl Ring {
     }
     fn color(&self) -> Color {
         match self {
-            Ring::Black => Color::new(0, 0, 0),
+            Ring::Black => Color::new(48, 48, 48),
             Ring::Brown => Color::new(165, 82, 42),
-            Ring::Red => Color::new(255, 0, 0),
+            Ring::Red => Color::new(224, 0, 0),
             Ring::Orange => Color::new(255, 165, 0),
             Ring::Yellow => Color::new(255, 255, 0),
             Ring::Green => Color::new(0, 255, 0),
@@ -162,7 +162,7 @@ fn main() -> Result<()> {
     let y_size = i64::try_from(y_size)?;
 
     let bbox = bb2d(0..x_size as i64, 0..y_size as i64);
-    let mut frame = Frame::new(bbox, Color::black());
+    let mut frame = Frame::new(bbox, Color::new(0, 0, 64));
 
     let metal_body_color = Color::new(0, 192, 192);
     let carbon_body_color = Color::new(242, 200, 150);
@@ -177,7 +177,7 @@ fn main() -> Result<()> {
     let wire = bb2d(bbox.x_range(), y_wire_min..=y_wire_max);
 
     let x_body_size = 56;
-    let y_body_size = 12;
+    let y_body_size = 16;
     let x_ring_offset = 8;
     let x_ring_extra_offset = 4;
     let x_ring_size = 4;
