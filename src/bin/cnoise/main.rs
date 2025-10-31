@@ -133,6 +133,14 @@ fn main() -> std::io::Result<()> {
         (0.02, Color::new(25, 11, 47), Color::new(25, 11, 47)),
         (0.8, Color::new(15, 0, 10), Color::new(15, 0, 10)),
     ]);
+    let palette_39 = Palette(vec![
+        (0.84, Color::new(20, 20, 20), Color::new(20, 20, 20)),
+        (0.03, Color::new(250, 245, 245), Color::new(250, 245, 245)),
+        (0.04, Color::new(0, 255, 0), Color::new(0, 255, 0)),
+        (0.06, Color::new(150, 115, 255), Color::new(150, 115, 255)),
+        (0.01, Color::new(255, 55, 25), Color::new(255, 55, 25)),
+        (0.02, Color::new(102, 242, 255), Color::new(102, 242, 255)),
+    ]);
 
     let palette = match arg {
         29 => palette_29,
@@ -144,7 +152,8 @@ fn main() -> std::io::Result<()> {
         35 => palette_35,
         36 => palette_36,
         37 => palette_37,
-        _ => palette_38,
+        38 => palette_38,
+        _ => palette_39,
     };
 
     let mut frame = repeat_with(|| {
