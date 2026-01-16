@@ -5,7 +5,7 @@ use std::io::Write;
 use std::thread::sleep;
 use std::time::Duration;
 
-use rand::thread_rng;
+use rand::rng;
 use rand::Rng;
 
 use lowdim::bb2d;
@@ -137,7 +137,7 @@ const E12: &[[Ring; 2]; 12] = &[
 ];
 
 fn random_element<'a, T, R: Rng>(elements: &'a [T], rng: &mut R) -> &'a T {
-    let i = rng.gen_range(0..elements.len());
+    let i = rng.random_range(0..elements.len());
     &elements[i]
 }
 
@@ -154,7 +154,7 @@ fn main() -> Result<()> {
     };
     eprintln!("screen size {}x{}, arg {}", x_size, y_size, arg);
 
-    let mut rng = thread_rng();
+    let mut rng = rng();
 
     let frame_size = x_size * y_size * COLORS;
 
@@ -226,11 +226,11 @@ fn main() -> Result<()> {
     loop {
         if t == 0 {
             // Pick a new resistor.
-            if rng.gen::<f64>() < p_pruefungsfragen {
+            if rng.random::<f64>() < p_pruefungsfragen {
                 r = random_element(&pruefungsfragen, &mut rng).clone();
                 body_color = carbon_body_color;
             } else {
-                let is_five_ring = rng.gen::<f64>() < 0.5;
+                let is_five_ring = rng.random::<f64>() < 0.5;
 
                 body_color = if is_five_ring {
                     // A turquise blue metal film resistor.

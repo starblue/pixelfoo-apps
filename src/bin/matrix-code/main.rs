@@ -12,7 +12,7 @@ use std::thread::sleep;
 use std::time::Duration;
 use std::time::Instant;
 
-use rand::thread_rng;
+use rand::rng;
 use rand::Rng;
 
 use lowdim::bb2d;
@@ -75,11 +75,11 @@ impl RunningState {
         self.t += 1;
         let y = usize::try_from(self.head_y()).unwrap();
         if y >= self.brightnesses.len() {
-            self.brightnesses.push(0.5 + 0.5 * rng.gen::<f64>());
+            self.brightnesses.push(0.5 + 0.5 * rng.random::<f64>());
         }
-        if rng.gen::<f64>() < 0.2 {
-            let y = rng.gen_range(0..self.brightnesses.len());
-            self.brightnesses[y] = 0.5 + 0.5 * rng.gen::<f64>();
+        if rng.random::<f64>() < 0.2 {
+            let y = rng.random_range(0..self.brightnesses.len());
+            self.brightnesses[y] = 0.5 + 0.5 * rng.random::<f64>();
         }
     }
     fn head_y(&self) -> i64 {
@@ -198,7 +198,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     };
     eprintln!("screen size {}x{}, arg {}", x_size, y_size, arg);
 
-    let mut rng = thread_rng();
+    let mut rng = rng();
     let bbox = bb2d(0..x_size as i64, 0..y_size as i64);
 
     let frame_duration = Duration::from_millis(50);
@@ -226,16 +226,16 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         // Update the animation
         for animation in &mut animations {
             if animation.is_idle() {
-                if rng.gen::<f64>() < p_new_animation {
+                if rng.random::<f64>() < p_new_animation {
                     let frames_per_step = {
-                        if rng.gen::<f64>() < p_slow_animation {
+                        if rng.random::<f64>() < p_slow_animation {
                             frames_per_step_slow
                         } else {
                             frames_per_step_normal
                         }
                     };
                     if frame_count % frames_per_step == 0 {
-                        let size = rng.gen_range(15..=30);
+                        let size = rng.random_range(15..=30);
                         animation.start(frames_per_step, size, 15, i64::try_from(y_size)?);
                     }
                 }

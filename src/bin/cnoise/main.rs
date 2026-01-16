@@ -5,7 +5,7 @@ use std::iter::repeat_with;
 use std::thread::sleep;
 use std::time::Duration;
 
-use rand::thread_rng;
+use rand::rng;
 use rand::Rng;
 
 use pixelfoo_apps::color::Color;
@@ -28,12 +28,12 @@ impl Palette {
     where
         R: Rng,
     {
-        let r = rng.gen::<f64>();
+        let r = rng.random::<f64>();
         let mut p_sum = 0.0;
         for &(p, c0, c1) in &self.0 {
             p_sum += p;
             if r < p_sum {
-                return c0.interpolate(c1, rng.gen::<f64>().powf(2.0));
+                return c0.interpolate(c1, rng.random::<f64>().powf(2.0));
             }
         }
         Color::black()
@@ -58,7 +58,7 @@ fn main() -> std::io::Result<()> {
     let t_frame = 0.040; // s
     let delay = Duration::new(0, (1_000_000_000.0 * t_frame) as u32);
 
-    let mut rng = thread_rng();
+    let mut rng = rng();
 
     let palette_29 = Palette(vec![
         (0.04, Color::new(86, 197, 208), Color::new(86, 197, 208)),
@@ -164,8 +164,8 @@ fn main() -> std::io::Result<()> {
     .take(y_size)
     .collect::<Vec<_>>();
     loop {
-        let x = rng.gen_range(0..x_size);
-        let y = rng.gen_range(0..y_size);
+        let x = rng.random_range(0..x_size);
+        let y = rng.random_range(0..y_size);
         let c = palette.pick(&mut rng);
         frame[y][x] = c;
 

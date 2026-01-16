@@ -7,7 +7,7 @@ use std::iter::repeat;
 use std::thread::sleep;
 use std::time::Duration;
 
-use rand::thread_rng;
+use rand::rng;
 use rand::Rng;
 
 use pixelfoo_apps::color::Color;
@@ -53,7 +53,7 @@ fn main() -> std::io::Result<()> {
     let t_frame = 0.040; // s
     let delay = Duration::new(0, (1_000_000_000.0 * t_frame) as u32);
 
-    let mut rng = thread_rng();
+    let mut rng = rng();
 
     let colors = vec![
         Color::black(),
@@ -70,24 +70,24 @@ fn main() -> std::io::Result<()> {
         .collect::<Vec<_>>();
     for x in 0..(x_size / 8) {
         for y in 0..(y_size / 8) {
-            let fg = colors[rng.gen_range(0..colors.len())]
-                .interpolate(Color::black(), 0.8 * rng.gen::<f64>());
-            let bg = colors[rng.gen_range(0..colors.len())]
-                .interpolate(Color::black(), 0.8 * rng.gen::<f64>());
-            let start_index = rng.gen_range(0..buffer.len() / 8) * 8;
+            let fg = colors[rng.random_range(0..colors.len())]
+                .interpolate(Color::black(), 0.8 * rng.random::<f64>());
+            let bg = colors[rng.random_range(0..colors.len())]
+                .interpolate(Color::black(), 0.8 * rng.random::<f64>());
+            let start_index = rng.random_range(0..buffer.len() / 8) * 8;
             let bitmap = &buffer[start_index..(start_index + 8)];
             paint_char(&mut frame, x, y, bitmap, fg, bg);
         }
     }
     loop {
-        if rng.gen::<f64>() < 0.02 {
-            let x = rng.gen_range(0..x_size / 8);
-            let y = rng.gen_range(0..y_size / 8);
-            let fg = colors[rng.gen_range(0..colors.len())]
-                .interpolate(Color::black(), 0.8 * rng.gen::<f64>());
-            let bg = colors[rng.gen_range(0..colors.len())]
-                .interpolate(Color::black(), 0.8 * rng.gen::<f64>());
-            let start_index = rng.gen_range(0..buffer.len() / 8) * 8;
+        if rng.random::<f64>() < 0.02 {
+            let x = rng.random_range(0..x_size / 8);
+            let y = rng.random_range(0..y_size / 8);
+            let fg = colors[rng.random_range(0..colors.len())]
+                .interpolate(Color::black(), 0.8 * rng.random::<f64>());
+            let bg = colors[rng.random_range(0..colors.len())]
+                .interpolate(Color::black(), 0.8 * rng.random::<f64>());
+            let start_index = rng.random_range(0..buffer.len() / 8) * 8;
             let bitmap = &buffer[start_index..(start_index + 8)];
             paint_char(&mut frame, x, y, bitmap, fg, bg);
         }

@@ -5,7 +5,7 @@ use std::iter::repeat;
 use std::thread::sleep;
 use std::time::Duration;
 
-use rand::thread_rng;
+use rand::rng;
 use rand::Rng;
 
 use pixelfoo_apps::color::Color;
@@ -35,7 +35,7 @@ fn main() -> std::io::Result<()> {
     };
     eprintln!("screen size {}x{}, arg {}", x_size, y_size, arg);
 
-    let mut rng = thread_rng();
+    let mut rng = rng();
 
     let t_frame = 0.040; // s
     let delay = Duration::new(0, (1_000_000_000.0 * t_frame) as u32);
@@ -65,7 +65,7 @@ fn main() -> std::io::Result<()> {
     let b = 27.0;
     let c = 8.0 / 3.0;
 
-    let mut x = rng.gen::<f64>() - 0.5;
+    let mut x = rng.random::<f64>() - 0.5;
     let mut y = 0.0;
     let mut z = zc;
 

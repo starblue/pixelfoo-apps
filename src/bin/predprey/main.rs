@@ -4,7 +4,7 @@ use std::io::Write;
 use std::thread::sleep;
 use std::time::Duration;
 
-use rand::thread_rng;
+use rand::rng;
 use rand::Rng;
 
 use lowdim::bb2d;
@@ -83,14 +83,14 @@ fn main() -> std::io::Result<()> {
     };
     eprintln!("screen size {}x{}, arg {}", x_size, y_size, arg);
 
-    let mut rng = thread_rng();
+    let mut rng = rng();
     let bbox = bb2d(0..x_size, 0..y_size);
 
     let p_empty = 0.25;
     let p_grass = 0.25;
     let p_rabbit = 0.25;
     let mut board = Board::new(bbox, || {
-        let p = rng.gen::<f64>();
+        let p = rng.random::<f64>();
         if p < p_empty {
             Square::Empty
         } else if p < p_empty + p_grass {
@@ -114,7 +114,9 @@ fn main() -> std::io::Result<()> {
 
     loop {
         for _ in 0..arg {
-            let pos = bbox.random_point(&mut rng);
+            let x = rng.random_range(bbox.x_range());
+            let y = rng.random_range(bbox.y_range());
+            let pos = p2d(x, y);
             let sq = board.get(pos);
             let dx = (pos.x() as f64 - x_mid as f64) / r as f64;
             let dy = (pos.y() as f64 - y_mid as f64) / r as f64;
@@ -125,7 +127,7 @@ fn main() -> std::io::Result<()> {
                 Square::Rabbit => p0,
                 Square::Fox => 0.8 * p0,
             };
-            let new_sq = if rng.gen::<f64>() < p_survive {
+            let new_sq = if rng.random::<f64>() < p_survive {
                 sq
             } else {
                 Square::Empty

@@ -4,7 +4,7 @@ use std::io::Write;
 use std::thread::sleep;
 use std::time::Duration;
 
-use rand::thread_rng;
+use rand::rng;
 use rand::Rng;
 
 use lowdim::bb2d;
@@ -75,7 +75,7 @@ fn main() -> std::io::Result<()> {
     };
     eprintln!("screen size {}x{}, arg {}", x_size, y_size, arg);
 
-    let mut rng = thread_rng();
+    let mut rng = rng();
     let bbox = bb2d(0..x_size as i64, 0..y_size as i64);
 
     let p_alive_init = 0.125;
@@ -83,7 +83,7 @@ fn main() -> std::io::Result<()> {
 
     let mut board = Board::with(bbox, |_p| {
         // Initialize board randomly.
-        let r = rng.gen::<f64>();
+        let r = rng.random::<f64>();
         if r < p_alive_init {
             Square::Alive
         } else {
@@ -110,7 +110,7 @@ fn main() -> std::io::Result<()> {
             } else {
                 if p.y() < bbox.y_min() || p.y() > bbox.y_max() {
                     // The invisible long edge is filled randomly.
-                    let r = rng.gen::<f64>();
+                    let r = rng.random::<f64>();
                     if r < p_alive_edge {
                         Square::Alive
                     } else {
