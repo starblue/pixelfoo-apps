@@ -31,6 +31,10 @@ primes - display primes as rod numerals (hommage to Rune Mields)
 colorcode - Show a color coded resistor
     parameter is not used yet
 
+thiele - Thieles talmønstre, quadratic residues of Gaussian integers modulo
+    parameter is the number of seconds between pattern changes
+
+
 Compile with "cargo build --release".
 
 The binary executables are in the "target/release" subdirectory.
