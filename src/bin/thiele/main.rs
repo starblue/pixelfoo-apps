@@ -30,6 +30,15 @@ enum Square {
     Residue,
     NonResidue,
 }
+impl Square {
+    fn color(&self) -> Color {
+        match self {
+            Square::Zero => Color::blue(),
+            Square::Residue => Color::new(0xd2, 0xd4, 0xbc),
+            Square::NonResidue => Color::black(),
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 struct Board {
@@ -45,22 +54,25 @@ impl Board {
     }
 }
 
-fn send<T: Write>(w: &mut T, board: &Board) -> std::io::Result<()> {
-    for y in board.bbox().y_range() {
-        for x in board.bbox().x_range() {
-            let square = board.map[p2d(x, y)];
-            let c = match square {
-                Square::Zero => Color::blue(),
-                Square::Residue => Color::new(0xd2, 0xd4, 0xbc),
-                Square::NonResidue => Color::black(),
-            };
-            w.write_all(&c.rgb())?;
+fn send<T: Write>(
+    w: &mut T,
+    old_board: &Board,
+    new_board: &Board,
+    alpha: f64,
+) -> std::io::Result<()> {
+    for y in old_board.bbox().y_range() {
+        for x in old_board.bbox().x_range() {
+            let old_color = old_board.map[p2d(x, y)].color();
+            let new_color = new_board.map[p2d(x, y)].color();
+            let color = old_color.interpolate(new_color, alpha);
+
+            w.write_all(&color.rgb())?;
         }
     }
     w.flush()
 }
 
-const DEFAULT_ARG: i64 = 60;
+const DEFAULT_ARG: u64 = 10;
 
 fn main() -> std::io::Result<()> {
     let args = args().collect::<Vec<_>>();
@@ -69,34 +81,49 @@ fn main() -> std::io::Result<()> {
     let x_size = args[1].parse::<i64>().unwrap();
     let y_size = args[2].parse::<i64>().unwrap();
     let arg = if let Some(s) = args.get(3) {
-        s.parse::<i64>().unwrap_or(DEFAULT_ARG)
+        s.parse::<u64>().unwrap_or(DEFAULT_ARG)
     } else {
         DEFAULT_ARG
     };
     eprintln!("screen size {}x{}, arg {}", x_size, y_size, arg);
 
+    let min_size = x_size.min(y_size);
+
+    // The range of the real and imaginary parts of a prime modulus.
+    let prime_range = 0..=(min_size / 3).max(8);
+    // The minimal norm of a prime modulus.
+    let min_norm = (min_size / 10).pow(2).max(9);
+
     let mut rng = rng();
     let bbox = bb2d(0..x_size, 0..y_size);
 
-    let delay = Duration::from_millis(200);
+    let frames_per_second = 25;
+    let delay = Duration::from_millis(1000 / frames_per_second);
     let frame_seconds = if arg > 0 { arg } else { DEFAULT_ARG };
-    let max_time_count = frame_seconds * 5;
+    let frame_time_count = frame_seconds * frames_per_second;
 
-    let mut board = Board::with(bbox, |_p| Square::NonResidue);
+    let fade_time_count = (2 * frames_per_second).min(frame_time_count / 3);
+    let fade_alpha_step = 1.0 / (fade_time_count as f64);
 
-    let mut time_count = 0;
+    let mut old_board = Board::with(bbox, |_p| Square::NonResidue);
+    let mut new_board = Board::with(bbox, |_p| Square::NonResidue);
+
+    let mut time_count = frame_time_count;
     loop {
-        if time_count <= 0 {
-            time_count = max_time_count;
+        if time_count >= frame_time_count {
+            time_count = 0;
 
             // Pick a random gaussian prime somewhat smaller than the screen size.
-            let mut m = Gaussian::ZERO;
-            while !m.is_prime() || m.norm() < 16 {
-                let min_size = x_size.min(y_size);
-                let range = 0..=(min_size / 3).max(8);
-                let re = rng.random_range(range.clone());
-                let im = rng.random_range(range);
+            let mut m;
+            loop {
+                let re = rng.random_range(prime_range.clone());
+                let im = rng.random_range(prime_range.clone());
                 m = Gaussian(re, im);
+
+                if m.is_prime() && m.norm() >= min_norm {
+                    // We found a suitable prime.
+                    break;
+                }
             }
 
             let mut reps = HashSet::new();
@@ -120,7 +147,8 @@ fn main() -> std::io::Result<()> {
 
             eprintln!("chose prime modulus {m:?}, offset {origin:?}");
 
-            board = Board::with(bbox, |p| {
+            old_board = new_board;
+            new_board = Board::with(bbox, |p| {
                 let re = p.x();
                 let im = p.y();
                 let a = mod_from(m, origin + Gaussian(re, im));
@@ -134,12 +162,14 @@ fn main() -> std::io::Result<()> {
             });
         }
 
+        let alpha = ((time_count as f64) * fade_alpha_step).min(1.0);
+
         let mut buf = Vec::with_capacity((x_size * y_size * 3) as usize);
-        send(&mut buf, &board)?;
+        send(&mut buf, &old_board, &new_board, alpha)?;
         stdout().write_all(&buf)?;
         stdout().flush()?;
 
         sleep(delay);
-        time_count -= 1;
+        time_count += 1;
     }
 }
