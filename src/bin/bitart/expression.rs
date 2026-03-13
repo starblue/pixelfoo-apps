@@ -255,7 +255,7 @@ pub struct RandomExpressionBuilder {
 impl RandomExpressionBuilder {
     pub fn build<R: Rng>(rng: &mut R) -> Expression {
         let builder = Self::new();
-        builder.build_recursive(rng, builder.depth, true)
+        builder.build_binary(rng, builder.depth)
     }
     fn new() -> RandomExpressionBuilder {
         // Default values
