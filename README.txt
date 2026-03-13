@@ -34,6 +34,9 @@ colorcode - Show a color coded resistor
 thiele - Thieles talmønstre, quadratic residues of Gaussian integers modulo
     parameter is the number of seconds between pattern changes
 
+bitart - Evaluate random expressions over x and y (with thanks to suetanvil)
+    parameter is the number of seconds between pattern changes
+
 
 Compile with "cargo build --release".
 
