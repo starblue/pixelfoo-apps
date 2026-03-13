@@ -18,6 +18,7 @@ use pixelfoo_apps::color::Color;
 mod expression;
 use expression::Env;
 use expression::RandomExpressionBuilder;
+use expression::Variable;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Square {
@@ -129,7 +130,10 @@ fn main() -> std::io::Result<()> {
 
                 let percent = 100 * max_count / bbox.area();
 
-                if (min_percent..=max_percent).contains(&percent) {
+                if expression.contains_var(Variable::X)
+                    && expression.contains_var(Variable::Y)
+                    && (min_percent..=max_percent).contains(&percent)
+                {
                     eprintln!("chose expression {expression}");
 
                     old_board = new_board;

@@ -23,7 +23,7 @@ impl fmt::Display for Literal {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Variable {
     X,
     Y,
@@ -92,6 +92,9 @@ pub struct UnaryOperation {
 impl UnaryOperation {
     fn eval(&self, env: &Env) -> i64 {
         self.operator.apply(self.operand.eval(env))
+    }
+    fn contains_var(&self, variable: Variable) -> bool {
+        self.operand.contains_var(variable)
     }
 }
 impl fmt::Display for UnaryOperation {
@@ -180,6 +183,9 @@ impl BinaryOperation {
         self.operator
             .apply(self.operands[0].eval(env), self.operands[1].eval(env))
     }
+    fn contains_var(&self, variable: Variable) -> bool {
+        self.operands.iter().any(|e| e.contains_var(variable))
+    }
 }
 impl fmt::Display for BinaryOperation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -205,6 +211,14 @@ impl InnerExpression {
             InnerExpression::Variable(variable) => variable.eval(env),
             InnerExpression::UnaryOperation(op) => op.eval(env),
             InnerExpression::BinaryOperation(op) => op.eval(env),
+        }
+    }
+    pub fn contains_var(&self, variable: Variable) -> bool {
+        match self {
+            InnerExpression::Literal(_) => false,
+            InnerExpression::Variable(v) => *v == variable,
+            InnerExpression::UnaryOperation(op) => op.contains_var(variable),
+            InnerExpression::BinaryOperation(op) => op.contains_var(variable),
         }
     }
 }
