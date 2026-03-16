@@ -6,6 +6,7 @@ use std::thread::sleep;
 use std::time::Duration;
 
 use rand::rng;
+use rand::Rng;
 
 use lowdim::bb2d;
 use lowdim::p2d;
@@ -20,28 +21,35 @@ use expression::Env;
 use expression::RandomExpressionBuilder;
 use expression::Variable;
 
+fn random_color<R: Rng>(rng: &mut R) -> Color {
+    let r = rng.random::<f64>();
+    let g = rng.random::<f64>();
+    let b = rng.random::<f64>();
+
+    let s = r + g + b;
+
+    let r = (255.0 * r / s) as u8;
+    let g = (255.0 * g / s) as u8;
+    let b = (255.0 * b / s) as u8;
+
+    Color::new(r, g, b)
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Square {
     Common,
     Uncommon,
 }
-impl Square {
-    fn color(&self) -> Color {
-        match self {
-            Square::Common => Color::new(0xd2, 0xd4, 0xbc),
-            Square::Uncommon => Color::black(),
-        }
-    }
-}
 
 #[derive(Clone, Debug)]
 struct Board {
+    color: Color,
     map: Array2d<i64, Square>,
 }
 impl Board {
-    pub fn with(bbox: BBox2d, f: impl FnMut(Point2d) -> Square) -> Board {
+    pub fn with(color: Color, bbox: BBox2d, f: impl FnMut(Point2d) -> Square) -> Board {
         let map = Array2d::with(bbox, f);
-        Board { map }
+        Board { color, map }
     }
     pub fn bbox(&self) -> BBox2d {
         self.map.bbox()
@@ -56,8 +64,14 @@ fn send<T: Write>(
 ) -> std::io::Result<()> {
     for y in old_board.bbox().y_range() {
         for x in old_board.bbox().x_range() {
-            let old_color = old_board.map[p2d(x, y)].color();
-            let new_color = new_board.map[p2d(x, y)].color();
+            let old_color = match old_board.map[p2d(x, y)] {
+                Square::Uncommon => Color::black(),
+                Square::Common => old_board.color,
+            };
+            let new_color = match new_board.map[p2d(x, y)] {
+                Square::Uncommon => Color::black(),
+                Square::Common => new_board.color,
+            };
             let color = old_color.interpolate(new_color, alpha);
 
             w.write_all(&color.rgb())?;
@@ -95,8 +109,8 @@ fn main() -> std::io::Result<()> {
     let fade_time_count = (2 * frames_per_second).min(frame_time_count / 3);
     let fade_alpha_step = 1.0 / (fade_time_count as f64);
 
-    let mut old_board = Board::with(bbox, |_p| Square::Uncommon);
-    let mut new_board = Board::with(bbox, |_p| Square::Uncommon);
+    let mut old_board = Board::with(Color::black(), bbox, |_p| Square::Uncommon);
+    let mut new_board = Board::with(Color::black(), bbox, |_p| Square::Uncommon);
 
     let mut time_count = frame_time_count;
     loop {
@@ -137,7 +151,8 @@ fn main() -> std::io::Result<()> {
                     eprintln!("chose expression {expression}");
 
                     old_board = new_board;
-                    new_board = Board::with(bbox, |p| {
+                    let color = random_color(&mut rng);
+                    new_board = Board::with(color, bbox, |p| {
                         // Use the `onebit` scheme for now.
                         if values[p] == max_count_value {
                             Square::Common
