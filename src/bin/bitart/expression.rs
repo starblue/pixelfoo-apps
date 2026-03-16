@@ -99,7 +99,7 @@ impl UnaryOperation {
 }
 impl fmt::Display for UnaryOperation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}{}", self.operator, self.operand)
+        write!(f, "{}({})", self.operator, self.operand)
     }
 }
 
