@@ -22,15 +22,19 @@ use expression::RandomExpressionBuilder;
 use expression::Variable;
 
 fn random_color<R: Rng>(rng: &mut R) -> Color {
-    let r = rng.random::<f64>();
-    let g = rng.random::<f64>();
-    let b = rng.random::<f64>();
+    let a = 255;
+    let b = rng.random::<u8>();
+    let c = 0;
 
-    let s = r + g + b;
-
-    let r = (255.0 * r / s) as u8;
-    let g = (255.0 * g / s) as u8;
-    let b = (255.0 * b / s) as u8;
+    let (r, g, b) = match rng.random_range(0..6) {
+        0 => (a, b, c),
+        1 => (a, c, b),
+        2 => (b, a, c),
+        3 => (b, c, a),
+        4 => (c, a, b),
+        5 => (c, b, a),
+        _ => unreachable!(),
+    };
 
     Color::new(r, g, b)
 }
