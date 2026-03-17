@@ -84,7 +84,7 @@ fn send<T: Write>(
     w.flush()
 }
 
-const DEFAULT_ARG: u64 = 10;
+const DEFAULT_ARG: u64 = 60;
 
 fn main() -> std::io::Result<()> {
     let args = args().collect::<Vec<_>>();
