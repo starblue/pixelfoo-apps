@@ -1,8 +1,11 @@
 use core::fmt;
 
+use std::num::Wrapping;
 use std::rc::Rc;
 
 use rand::Rng;
+
+type Value = Wrapping<i64>;
 
 #[derive(Clone, Debug)]
 pub struct Env {
@@ -13,8 +16,8 @@ pub struct Env {
 #[derive(Clone, Copy, Debug)]
 pub struct Literal(i64);
 impl Literal {
-    fn eval(&self) -> i64 {
-        self.0
+    fn eval(&self) -> Value {
+        Wrapping(self.0)
     }
 }
 impl fmt::Display for Literal {
@@ -36,10 +39,10 @@ impl Variable {
         let i = rng.random_range(0..values.len());
         values[i]
     }
-    fn eval(&self, env: &Env) -> i64 {
+    fn eval(&self, env: &Env) -> Value {
         match self {
-            Variable::X => env.x,
-            Variable::Y => env.y,
+            Variable::X => Wrapping(env.x),
+            Variable::Y => Wrapping(env.y),
         }
     }
 }
@@ -71,7 +74,7 @@ impl UnaryOperator {
         let i = rng.random_range(0..values.len());
         values[i]
     }
-    fn apply(&self, operand: i64) -> i64 {
+    fn apply(&self, operand: Value) -> Value {
         match self {
             UnaryOperator::Negation => -operand,
             UnaryOperator::Complement => !operand,
@@ -96,7 +99,7 @@ pub struct UnaryOperation {
     operand: Expression,
 }
 impl UnaryOperation {
-    fn eval(&self, env: &Env) -> i64 {
+    fn eval(&self, env: &Env) -> Value {
         self.operator.apply(self.operand.eval(env))
     }
     fn contains_var(&self, variable: Variable) -> bool {
@@ -137,19 +140,19 @@ impl BinaryOperator {
         let i = rng.random_range(0..values.len());
         values[i]
     }
-    fn apply(&self, operand0: i64, operand1: i64) -> i64 {
-        fn safe_div(operand0: i64, operand1: i64) -> i64 {
-            if operand1 != 0 {
+    fn apply(&self, operand0: Value, operand1: Value) -> Value {
+        fn safe_div(operand0: Value, operand1: Value) -> Value {
+            if operand1 != Wrapping(0) {
                 operand0 / operand1
             } else {
-                0
+                Wrapping(0)
             }
         }
-        fn safe_rem(operand0: i64, operand1: i64) -> i64 {
-            if operand1 != 0 {
+        fn safe_rem(operand0: Value, operand1: Value) -> Value {
+            if operand1 != Wrapping(0) {
                 operand0 % operand1
             } else {
-                0
+                Wrapping(0)
             }
         }
         match self {
@@ -185,7 +188,7 @@ pub struct BinaryOperation {
     operands: [Expression; 2],
 }
 impl BinaryOperation {
-    fn eval(&self, env: &Env) -> i64 {
+    fn eval(&self, env: &Env) -> Value {
         self.operator
             .apply(self.operands[0].eval(env), self.operands[1].eval(env))
     }
@@ -211,7 +214,7 @@ pub enum InnerExpression {
     BinaryOperation(BinaryOperation),
 }
 impl InnerExpression {
-    pub fn eval(&self, env: &Env) -> i64 {
+    pub fn eval(&self, env: &Env) -> Value {
         match self {
             InnerExpression::Literal(literal) => literal.eval(),
             InnerExpression::Variable(variable) => variable.eval(env),

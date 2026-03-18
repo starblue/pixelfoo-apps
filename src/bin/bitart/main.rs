@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::env::args;
 use std::io::stdout;
 use std::io::Write;
+use std::num::Wrapping;
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -138,7 +139,7 @@ fn main() -> std::io::Result<()> {
 
                 // Find the most common value and its count.
                 let mut max_count = 0;
-                let mut max_count_value = 0;
+                let mut max_count_value = Wrapping(0);
                 for (value, count) in histogram {
                     if count > max_count {
                         max_count = count;
