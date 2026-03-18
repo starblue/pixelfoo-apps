@@ -28,15 +28,15 @@ fn random_color<R: Rng>(rng: &mut R) -> Color {
     let b = rng.random::<u8>();
     let c = 0;
 
-    let (r, g, b) = match rng.random_range(0..6) {
-        0 => (a, b, c),
-        1 => (a, c, b),
-        2 => (b, a, c),
-        3 => (b, c, a),
-        4 => (c, a, b),
-        5 => (c, b, a),
-        _ => unreachable!(),
-    };
+    let permutations = [
+        (a, b, c),
+        (a, c, b),
+        (b, a, c),
+        (b, c, a),
+        (c, a, b),
+        (c, b, a),
+    ];
+    let &(r, g, b) = permutations.choose(rng).unwrap();
 
     Color::new(r, g, b)
 }
