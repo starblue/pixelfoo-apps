@@ -21,6 +21,7 @@ mod expression;
 use expression::Env;
 use expression::RandomExpressionBuilder;
 use expression::Variable;
+use rand::seq::IndexedRandom;
 
 fn random_color<R: Rng>(rng: &mut R) -> Color {
     let a = 255;
@@ -122,12 +123,16 @@ fn main() -> std::io::Result<()> {
         if time_count >= frame_time_count {
             time_count = 0;
 
+            // Pick a random corner as the origin.
+            let &(x0, xk) = [(0, 1), (bbox.x_max(), -1)].choose(&mut rng).unwrap();
+            let &(y0, yk) = [(0, 1), (bbox.y_max(), -1)].choose(&mut rng).unwrap();
+
             // Pick a random expression.
             loop {
                 let expression = RandomExpressionBuilder::build(&mut rng);
                 let values = Array2d::with(bbox, |p| {
-                    let x = p.x();
-                    let y = p.y();
+                    let x = x0 + xk * p.x();
+                    let y = y0 + yk * p.y();
                     let env = Env { x, y };
                     expression.eval(&env)
                 });
