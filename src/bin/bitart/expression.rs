@@ -60,6 +60,7 @@ pub enum UnaryOperator {
     Negation,
     Complement,
     ReverseBits,
+    Square,
 }
 
 impl UnaryOperator {
@@ -67,6 +68,7 @@ impl UnaryOperator {
         UnaryOperator::Negation,
         UnaryOperator::Complement,
         UnaryOperator::ReverseBits,
+        UnaryOperator::Square,
     ];
 
     fn random<R: Rng>(rng: &mut R) -> UnaryOperator {
@@ -79,16 +81,7 @@ impl UnaryOperator {
             UnaryOperator::Negation => -operand,
             UnaryOperator::Complement => !operand,
             UnaryOperator::ReverseBits => operand.reverse_bits(),
-        }
-    }
-}
-
-impl fmt::Display for UnaryOperator {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            UnaryOperator::Negation => write!(f, "-"),
-            UnaryOperator::Complement => write!(f, "~"),
-            UnaryOperator::ReverseBits => write!(f, "r"),
+            UnaryOperator::Square => operand * operand,
         }
     }
 }
@@ -108,7 +101,13 @@ impl UnaryOperation {
 }
 impl fmt::Display for UnaryOperation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}{}", self.operator, self.operand)
+        match self.operator {
+            UnaryOperator::Negation => write!(f, "-{}", self.operand)?,
+            UnaryOperator::Complement => write!(f, "~{}", self.operand)?,
+            UnaryOperator::ReverseBits => write!(f, "{}.rev", self.operand)?,
+            UnaryOperator::Square => write!(f, "{}²", self.operand)?,
+        }
+        Ok(())
     }
 }
 
