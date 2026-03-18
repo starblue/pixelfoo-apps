@@ -3,6 +3,7 @@ use core::fmt;
 use std::num::Wrapping;
 use std::rc::Rc;
 
+use rand::seq::IndexedRandom;
 use rand::Rng;
 
 type Value = Wrapping<i64>;
@@ -35,9 +36,7 @@ impl Variable {
     const VALUES: &[Variable] = &[Variable::X, Variable::Y];
 
     fn random<R: Rng>(rng: &mut R) -> Variable {
-        let values = Self::VALUES;
-        let i = rng.random_range(0..values.len());
-        values[i]
+        *Self::VALUES.choose(rng).unwrap()
     }
     fn eval(&self, env: &Env) -> Value {
         match self {
@@ -72,9 +71,7 @@ impl UnaryOperator {
     ];
 
     fn random<R: Rng>(rng: &mut R) -> UnaryOperator {
-        let values = Self::VALUES;
-        let i = rng.random_range(0..values.len());
-        values[i]
+        *Self::VALUES.choose(rng).unwrap()
     }
     fn apply(&self, operand: Value) -> Value {
         match self {
@@ -135,9 +132,7 @@ impl BinaryOperator {
     ];
 
     fn random<R: Rng>(rng: &mut R) -> BinaryOperator {
-        let values = Self::VALUES;
-        let i = rng.random_range(0..values.len());
-        values[i]
+        *Self::VALUES.choose(rng).unwrap()
     }
     fn apply(&self, operand0: Value, operand1: Value) -> Value {
         fn safe_div(operand0: Value, operand1: Value) -> Value {
