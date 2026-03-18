@@ -56,10 +56,15 @@ impl fmt::Display for Variable {
 pub enum UnaryOperator {
     Negation,
     Complement,
+    ReverseBits,
 }
 
 impl UnaryOperator {
-    const VALUES: &[UnaryOperator] = &[UnaryOperator::Negation, UnaryOperator::Complement];
+    const VALUES: &[UnaryOperator] = &[
+        UnaryOperator::Negation,
+        UnaryOperator::Complement,
+        UnaryOperator::ReverseBits,
+    ];
 
     fn random<R: Rng>(rng: &mut R) -> UnaryOperator {
         let values = Self::VALUES;
@@ -70,6 +75,7 @@ impl UnaryOperator {
         match self {
             UnaryOperator::Negation => -operand,
             UnaryOperator::Complement => !operand,
+            UnaryOperator::ReverseBits => operand.reverse_bits(),
         }
     }
 }
@@ -78,8 +84,8 @@ impl fmt::Display for UnaryOperator {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             UnaryOperator::Negation => write!(f, "-"),
-            // We use C syntax for `Display`.
             UnaryOperator::Complement => write!(f, "~"),
+            UnaryOperator::ReverseBits => write!(f, "r"),
         }
     }
 }
