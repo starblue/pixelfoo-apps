@@ -270,11 +270,7 @@ pub struct RandomExpressionBuilder {
     depth: usize,
 }
 impl RandomExpressionBuilder {
-    pub fn build<R: Rng>(rng: &mut R) -> Expression {
-        let builder = Self::new();
-        builder.build_binary(rng, builder.depth)
-    }
-    fn new() -> RandomExpressionBuilder {
+    pub fn new() -> RandomExpressionBuilder {
         // Default values
         let unary_rate = 0.3;
         let variable_rate = 0.5;
@@ -286,6 +282,9 @@ impl RandomExpressionBuilder {
             max_literal,
             depth,
         }
+    }
+    pub fn build<R: Rng>(&self, rng: &mut R) -> Expression {
+        self.build_binary(rng, self.depth)
     }
     fn build_recursive<R: Rng>(&self, rng: &mut R, depth: usize, left: bool) -> Expression {
         if depth == 0 {
@@ -314,5 +313,26 @@ impl RandomExpressionBuilder {
         let arg0 = self.build_recursive(rng, depth - 1, true);
         let arg1 = self.build_recursive(rng, depth - 1, false);
         binary_operation(op, arg0, arg1)
+    }
+
+    #[allow(unused)]
+    pub fn unary_rate(mut self, unary_rate: f64) -> Self {
+        self.unary_rate = unary_rate;
+        self
+    }
+    #[allow(unused)]
+    pub fn variable_rate(mut self, variable_rate: f64) -> Self {
+        self.variable_rate = variable_rate;
+        self
+    }
+    #[allow(unused)]
+    pub fn max_literal(mut self, max_literal: i64) -> Self {
+        self.max_literal = max_literal;
+        self
+    }
+    #[allow(unused)]
+    pub fn depth(mut self, depth: usize) -> Self {
+        self.depth = depth;
+        self
     }
 }

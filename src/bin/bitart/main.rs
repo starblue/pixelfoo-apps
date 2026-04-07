@@ -118,6 +118,8 @@ fn main() -> std::io::Result<()> {
     let mut old_board = Board::with(Color::black(), bbox, |_p| Square::Uncommon);
     let mut new_board = Board::with(Color::black(), bbox, |_p| Square::Uncommon);
 
+    let builder = RandomExpressionBuilder::new().depth(4);
+
     let mut time_count = frame_time_count;
     loop {
         if time_count >= frame_time_count {
@@ -129,7 +131,7 @@ fn main() -> std::io::Result<()> {
 
             // Pick a random expression.
             loop {
-                let expression = RandomExpressionBuilder::build(&mut rng);
+                let expression = builder.build(&mut rng);
                 let values = Array2d::with(bbox, |p| {
                     let x = x0 + xk * p.x();
                     let y = y0 + yk * p.y();
