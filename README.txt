@@ -37,6 +37,9 @@ thiele - Thieles talmønstre, quadratic residues of Gaussian integers modulo
 bitart - Evaluate random expressions over x and y (with thanks to suetanvil)
     parameter is the number of seconds between pattern changes
 
+phase-change - vary temperature to cycle between gaseous and liquid phase
+    parameter is the number of seconds for a full cycle
+
 
 Compile with "cargo build --release".
 
